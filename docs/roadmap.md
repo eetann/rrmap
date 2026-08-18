@@ -9,14 +9,14 @@
 ### データモデル・ファイル設計
 
 - [x] タスクを表すMarkdownファイルのフォーマットを決める（フロントマターに載せる項目: id・タイトル・ステータスなど） → [task-format.md](./task-format.md)
-- [ ] タスクファイルの保存先ディレクトリ構成を決める
-- [ ] 「何をするか」「現在の状態」「方針・意思決定」をタスクファイル内でどう区切るか決める
-- [ ] Knowledgeドキュメントの保存先・フォーマットを決める（ロードマップやADRとは別枠として）
+- [x] タスクファイルの保存先ディレクトリ構成を決める → [directory-structure.md](./directory-structure.md)
+- [x] 「何をするか」「現在の状態」「方針・意思決定」をタスクファイル内でどう区切るか決める → 自由なMarkdown（[task-format.md](./task-format.md)参照）
+- [x] Knowledgeドキュメントの保存先・フォーマットを決める（ロードマップやADRとは別枠として） → `docs/knowledge/`に自由なMarkdownで配置（[directory-structure.md](./directory-structure.md)参照）
 
 ### CLIの最小実装
 
-- [ ] タスクの作成・一覧・詳細表示・ステータス変更ができるコマンドを実装
-- [ ] Markdownを直接編集された場合でもCLIが正しく読み込めるようにする（パース処理）
+- [x] タスクの作成・一覧・詳細表示・ステータス変更ができるコマンドを実装 → `gunshi`で実装（`src/cli.ts`, `create`/`list`/`show`/`edit`）
+- [x] Markdownを直接編集された場合でもCLIが正しく読み込めるようにする（パース処理） → `src/task.ts`の`parseTask`でフロントマターをバリデーション
 
 ### 意思決定・Knowledge分離の仕組み
 

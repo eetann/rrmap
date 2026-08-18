@@ -1,12 +1,19 @@
 {
   "name": "rrmap",
-  "module": "index.ts",
+  "module": "src/cli.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "rrmap": "bun run src/cli.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "gunshi": "^0.37.1"
   }
 }
