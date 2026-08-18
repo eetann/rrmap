@@ -1,7 +1,7 @@
 import { define } from "gunshi";
-import { readTask, resolveTasksDir, writeTask } from "../store.ts";
-import { TASK_STATUSES } from "../task.ts";
-import { parseTaskId } from "./task-id.ts";
+import { readTask, resolveTasksDir, writeTask } from "../store";
+import { TASK_STATUSES } from "../task";
+import { parseTaskId } from "./task-id";
 
 export const editCommand = define({
   name: "edit",

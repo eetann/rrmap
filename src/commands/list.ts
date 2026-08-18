@@ -1,6 +1,6 @@
 import { define } from "gunshi";
-import { listTasks, resolveTasksDir } from "../store.ts";
-import { TASK_STATUSES } from "../task.ts";
+import { listTasks, resolveTasksDir } from "../store";
+import { TASK_STATUSES } from "../task";
 
 export const listCommand = define({
   name: "list",

@@ -1,6 +1,6 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parseTask, stringifyTask, taskFileName, type Task } from "./task.ts";
+import { parseTask, stringifyTask, taskFileName, type Task } from "./task";
 
 export function resolveTasksDir(baseDir: string = process.cwd()): string {
   return join(baseDir, ".rrmap", "tasks");

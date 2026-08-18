@@ -1,8 +1,8 @@
 import { cli } from "gunshi";
-import { createCommand } from "./commands/create.ts";
-import { editCommand } from "./commands/edit.ts";
-import { listCommand } from "./commands/list.ts";
-import { showCommand } from "./commands/show.ts";
+import { createCommand } from "./commands/create";
+import { editCommand } from "./commands/edit";
+import { listCommand } from "./commands/list";
+import { showCommand } from "./commands/show";
 
 try {
   await cli(process.argv.slice(2), listCommand, {

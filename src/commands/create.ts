@@ -1,5 +1,5 @@
 import { define } from "gunshi";
-import { listTasks, resolveTasksDir, writeTask } from "../store.ts";
+import { listTasks, resolveTasksDir, writeTask } from "../store";
 
 export const createCommand = define({
   name: "create",

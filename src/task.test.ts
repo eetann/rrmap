@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseTask, stringifyTask, type Task } from "./task.ts";
+import { parseTask, stringifyTask, type Task } from "./task";
 
 describe("parseTask", () => {
   test("parses a valid task", () => {

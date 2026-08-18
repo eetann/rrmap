@@ -1,6 +1,6 @@
 import { define } from "gunshi";
-import { readTask, resolveTasksDir } from "../store.ts";
-import { parseTaskId } from "./task-id.ts";
+import { readTask, resolveTasksDir } from "../store";
+import { parseTaskId } from "./task-id";
 
 export const showCommand = define({
   name: "show",
