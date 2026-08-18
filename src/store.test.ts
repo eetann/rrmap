@@ -31,6 +31,7 @@ describe("store", () => {
       title: "テスト",
       status: "draft",
       parent: null,
+      milestone: null,
       body: "本文",
     });
     expect(await readTask(tasksDir, 1)).toEqual({
@@ -38,6 +39,7 @@ describe("store", () => {
       title: "テスト",
       status: "draft",
       parent: null,
+      milestone: null,
       body: "本文",
     });
   });
@@ -47,8 +49,22 @@ describe("store", () => {
   });
 
   test("listTasks sorts by id", async () => {
-    await writeTask(tasksDir, { id: 2, title: "b", status: "draft", parent: null, body: "" });
-    await writeTask(tasksDir, { id: 1, title: "a", status: "draft", parent: null, body: "" });
+    await writeTask(tasksDir, {
+      id: 2,
+      title: "b",
+      status: "draft",
+      parent: null,
+      milestone: null,
+      body: "",
+    });
+    await writeTask(tasksDir, {
+      id: 1,
+      title: "a",
+      status: "draft",
+      parent: null,
+      milestone: null,
+      body: "",
+    });
     const tasks = await listTasks(tasksDir);
     expect(tasks.map((task) => task.id)).toEqual([1, 2]);
   });

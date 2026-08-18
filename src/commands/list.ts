@@ -1,6 +1,7 @@
 import { define } from "gunshi";
 import { listTasks, resolveTasksDir } from "../store";
 import { TASK_STATUSES } from "../task";
+import { parseMilestoneId } from "./milestone-id";
 
 export const listCommand = define({
   name: "list",
@@ -15,6 +16,10 @@ export const listCommand = define({
       type: "number",
       description: "親タスクidで絞り込む",
     },
+    milestone: {
+      type: "string",
+      description: "マイルストーンidで絞り込む",
+    },
   },
   run: async (ctx) => {
     const tasksDir = resolveTasksDir();
@@ -26,6 +31,10 @@ export const listCommand = define({
     if (ctx.values.parent !== undefined) {
       tasks = tasks.filter((task) => task.parent === ctx.values.parent);
     }
+    if (ctx.values.milestone !== undefined) {
+      const milestone = parseMilestoneId(ctx.values.milestone);
+      tasks = tasks.filter((task) => task.milestone === milestone);
+    }
 
     if (tasks.length === 0) {
       console.log("no tasks");
@@ -34,7 +43,10 @@ export const listCommand = define({
 
     for (const task of tasks) {
       const parentLabel = task.parent === null ? "-" : `#${task.parent}`;
-      console.log(`#${task.id}\t[${task.status}]\tparent:${parentLabel}\t${task.title}`);
+      const milestoneLabel = task.milestone === null ? "-" : task.milestone;
+      console.log(
+        `#${task.id}\t[${task.status}]\tparent:${parentLabel}\tmilestone:${milestoneLabel}\t${task.title}`,
+      );
     }
   },
 });

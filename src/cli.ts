@@ -2,6 +2,7 @@ import { cli } from "gunshi";
 import { createCommand } from "./commands/create";
 import { editCommand } from "./commands/edit";
 import { listCommand } from "./commands/list";
+import { milestoneCommand } from "./commands/milestone";
 import { showCommand } from "./commands/show";
 
 try {
@@ -15,6 +16,7 @@ try {
       list: listCommand,
       show: showCommand,
       edit: editCommand,
+      milestone: milestoneCommand,
     },
   });
 } catch (error) {

@@ -5,6 +5,7 @@ rrmapのCLI/UIが操作するタスクファイルは、プロジェクトルー
 ```
 .rrmap/
   tasks/       # タスクファイル（1タスク = 1 Markdownファイル。フォーマットは task-format.md 参照）
+  milestones/  # マイルストーンファイル（1マイルストーン = 1 Markdownファイル。フォーマットは milestone-format.md 参照）
 ```
 
 ## Knowledgeドキュメント

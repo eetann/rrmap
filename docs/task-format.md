@@ -10,6 +10,7 @@ id: 1
 title: データモデル・ファイル設計
 status: draft
 parent: null
+milestone: null
 ---
 ```
 
@@ -24,6 +25,7 @@ parent: null
 - `parent`: 分割元の親タスクのid。トップレベルのタスクは`null`
   - 親子関係は1階層のみ。`parent`を持つタスク（子タスク）はさらに子タスクを持てない
   - 子タスクの一覧は、`parent`が自分のidと一致するタスクファイルを逆引きして求める（親側にリストは持たせない）
+- `milestone`: 所属するマイルストーンのid。どのマイルストーンにも属さないタスクは`null`（[milestone-format.md](./milestone-format.md)参照）
 
 ## 本文
 

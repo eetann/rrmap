@@ -1,5 +1,7 @@
 import { define } from "gunshi";
+import { readMilestone, resolveMilestonesDir } from "../milestone-store";
 import { listTasks, resolveTasksDir, writeTask } from "../store";
+import { parseMilestoneId } from "./milestone-id";
 
 export const createCommand = define({
   name: "create",
@@ -13,9 +15,13 @@ export const createCommand = define({
       type: "number",
       description: "分割元の親タスクid",
     },
+    milestone: {
+      type: "string",
+      description: "所属するマイルストーンid",
+    },
   },
   run: async (ctx) => {
-    const { title, parent } = ctx.values;
+    const { title, parent, milestone } = ctx.values;
     const tasksDir = resolveTasksDir();
     const tasks = await listTasks(tasksDir);
 
@@ -31,12 +37,19 @@ export const createCommand = define({
       }
     }
 
+    let milestoneId: string | null = null;
+    if (milestone !== undefined) {
+      milestoneId = parseMilestoneId(milestone);
+      await readMilestone(resolveMilestonesDir(), milestoneId);
+    }
+
     const id = tasks.reduce((max, task) => Math.max(max, task.id), 0) + 1;
     await writeTask(tasksDir, {
       id,
       title,
       status: "draft",
       parent: parent ?? null,
+      milestone: milestoneId,
       body: "",
     });
     console.log(`created task #${id}: ${title}`);

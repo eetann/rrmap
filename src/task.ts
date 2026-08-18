@@ -1,4 +1,5 @@
 import matter from "gray-matter";
+import { isMilestoneId } from "./milestone";
 
 export const TASK_STATUSES = [
   "draft",
@@ -15,6 +16,7 @@ export interface Task {
   title: string;
   status: TaskStatus;
   parent: number | null;
+  milestone: string | null;
   body: string;
 }
 
@@ -50,12 +52,20 @@ export function parseTask(raw: string): Task {
   ) {
     throw new Error(`invalid task frontmatter: "parent" must be an integer or null`);
   }
+  if (
+    data.milestone !== null &&
+    data.milestone !== undefined &&
+    !isMilestoneId(data.milestone)
+  ) {
+    throw new Error(`invalid task frontmatter: "milestone" must be a milestone id or null`);
+  }
 
   return {
     id: data.id,
     title: data.title,
     status: data.status,
     parent: data.parent ?? null,
+    milestone: data.milestone ?? null,
     body: content.replace(/^\n+/, "").replace(/\n+$/, ""),
   };
 }
@@ -66,5 +76,6 @@ export function stringifyTask(task: Task): string {
     title: task.title,
     status: task.status,
     parent: task.parent,
+    milestone: task.milestone,
   });
 }

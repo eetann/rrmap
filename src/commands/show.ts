@@ -19,6 +19,7 @@ export const showCommand = define({
     console.log(`id: ${task.id}`);
     console.log(`status: ${task.status}`);
     console.log(`parent: ${task.parent === null ? "-" : `#${task.parent}`}`);
+    console.log(`milestone: ${task.milestone === null ? "-" : task.milestone}`);
     console.log("");
     console.log(task.body);
   },
