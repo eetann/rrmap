@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Milestone } from "../milestone";
 import type { Task } from "../task";
+import { CreateTaskDialog } from "./components/create-task-dialog";
 import { TaskTable } from "./components/task-table";
 
 export function App() {
@@ -8,8 +9,8 @@ export function App() {
   const [milestones, setMilestones] = useState<Milestone[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    Promise.all([
+  const loadData = useCallback(() => {
+    return Promise.all([
       fetch("/api/tasks").then((res) => res.json() as Promise<Task[]>),
       fetch("/api/milestones").then((res) => res.json() as Promise<Milestone[]>),
     ])
@@ -19,6 +20,10 @@ export function App() {
       })
       .catch((err) => setError(String(err)));
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   if (error) {
     return <div className="text-destructive p-6">読み込みに失敗しました: {error}</div>;
@@ -34,18 +39,27 @@ export function App() {
       <h1 className="text-2xl font-semibold">rrmap</h1>
       {milestones.map((milestone) => (
         <section key={milestone.id} className="space-y-3">
-          <h2 className="text-lg font-medium">
-            {milestone.title}
-            <span className="text-muted-foreground ml-2 text-sm font-normal">
-              {milestone.id} · {milestone.status}
-            </span>
-          </h2>
-          <TaskTable tasks={tasks.filter((task) => task.milestone === milestone.id)} />
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-medium">
+              {milestone.title}
+              <span className="text-muted-foreground ml-2 text-sm font-normal">
+                {milestone.id} · {milestone.status}
+              </span>
+            </h2>
+            <CreateTaskDialog milestoneId={milestone.id} onCreated={loadData} />
+          </div>
+          <TaskTable
+            tasks={tasks.filter((task) => task.milestone === milestone.id)}
+            onUpdated={loadData}
+          />
         </section>
       ))}
       <section className="space-y-3">
-        <h2 className="text-lg font-medium">未分類</h2>
-        <TaskTable tasks={unassigned} />
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-medium">未分類</h2>
+          <CreateTaskDialog milestoneId={null} onCreated={loadData} />
+        </div>
+        <TaskTable tasks={unassigned} onUpdated={loadData} />
       </section>
     </div>
   );

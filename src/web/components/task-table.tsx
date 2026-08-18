@@ -1,31 +1,41 @@
 import { type ColumnDef, flexRender, tableFeatures, useTable } from "@tanstack/react-table";
+import { useMemo } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Task } from "../../task";
+import { EditTaskDialog } from "./edit-task-dialog";
 
 const features = tableFeatures({});
 
-const columns: ColumnDef<typeof features, Task>[] = [
-  {
-    accessorKey: "id",
-    header: "ID",
-    cell: ({ row }) => `#${row.original.id}`,
-  },
-  {
-    accessorKey: "title",
-    header: "タイトル",
-  },
-  {
-    accessorKey: "status",
-    header: "ステータス",
-  },
-  {
-    accessorKey: "parent",
-    header: "親タスク",
-    cell: ({ row }) => (row.original.parent === null ? "-" : `#${row.original.parent}`),
-  },
-];
+export function TaskTable({ tasks, onUpdated }: { tasks: Task[]; onUpdated: () => void }) {
+  const columns = useMemo<ColumnDef<typeof features, Task>[]>(
+    () => [
+      {
+        accessorKey: "id",
+        header: "ID",
+        cell: ({ row }) => `#${row.original.id}`,
+      },
+      {
+        accessorKey: "title",
+        header: "タイトル",
+      },
+      {
+        accessorKey: "status",
+        header: "ステータス",
+      },
+      {
+        accessorKey: "parent",
+        header: "親タスク",
+        cell: ({ row }) => (row.original.parent === null ? "-" : `#${row.original.parent}`),
+      },
+      {
+        id: "actions",
+        header: "",
+        cell: ({ row }) => <EditTaskDialog task={row.original} onUpdated={onUpdated} />,
+      },
+    ],
+    [onUpdated],
+  );
 
-export function TaskTable({ tasks }: { tasks: Task[] }) {
   const table = useTable({
     features,
     columns,

@@ -37,7 +37,7 @@
 - [x] Bun.serve + HTML importsでフロントエンドを起動できるようにする → `src/web/server.ts`（`bun run dev`で起動、TailwindCSS/shadcn/ui導入済み）
 - [x] タスク一覧・詳細をビジュアルに表示し、雑にメモできるUIを用意 → `src/web/app.tsx` + `src/web/components/task-table.tsx`（TanStack Table）。詳細表示・メモ編集は未実装
 - [x] タスク一覧をマイルストーンごとにグループ化して表示できるようにする（テーブル表示、Notionのグループ化に近いイメージ） → マイルストーンごとにセクション分けして表示、未所属タスクは「未分類」セクション
-- [ ] UIからタスクの作成・編集・ステータス変更ができるようにする
+- [x] UIからタスクの作成・編集・ステータス変更ができるようにする → `POST /api/tasks`・`PATCH /api/tasks/:id`（`src/web/server.ts`）、`create-task-dialog.tsx`・`edit-task-dialog.tsx`
 
 ### AI連携の強化
 
