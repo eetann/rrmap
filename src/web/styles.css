@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -30,24 +29,41 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: oklch(0.99 0.004 85);
+  --foreground: oklch(0.24 0.012 85);
+  --card: oklch(1 0.004 85);
+  --card-foreground: oklch(0.24 0.012 85);
+  --popover: oklch(1 0.004 85);
+  --popover-foreground: oklch(0.24 0.012 85);
+  --primary: oklch(0.52 0.15 285);
+  --primary-foreground: oklch(0.99 0.01 285);
+  --secondary: oklch(0.94 0.006 85);
+  --secondary-foreground: oklch(0.24 0.012 85);
+  --muted: oklch(0.975 0.006 85);
+  --muted-foreground: oklch(0.52 0.012 85);
+  --accent: oklch(0.94 0.03 285);
+  --accent-foreground: oklch(0.52 0.15 285);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: oklch(0.9 0.008 85);
+  --input: oklch(0.9 0.008 85);
+  --ring: oklch(0.52 0.15 285 / 0.4);
+
+  /* タスク/マイルストーンのステータス表示用 */
+  --status-draft: oklch(0.6 0.01 85);
+  --status-draft-bg: oklch(0.93 0.008 85);
+  --status-draft-fg: oklch(0.52 0.012 85);
+  --status-refined: oklch(0.6 0.14 235);
+  --status-refined-bg: oklch(0.92 0.045 235);
+  --status-refined-fg: oklch(0.4 0.09 235);
+  --status-in_progress: oklch(0.68 0.15 65);
+  --status-in_progress-bg: oklch(0.92 0.05 65);
+  --status-in_progress-fg: oklch(0.42 0.1 65);
+  --status-done: oklch(0.58 0.14 150);
+  --status-done-bg: oklch(0.92 0.05 150);
+  --status-done-fg: oklch(0.4 0.1 150);
+  --status-cancelled: oklch(0.58 0.13 25);
+  --status-cancelled-bg: oklch(0.92 0.04 25);
+  --status-cancelled-fg: oklch(0.42 0.09 25);
 }
 
 .dark {
@@ -77,5 +93,25 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@keyframes side-peek-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes side-peek-slide-in {
+  from {
+    transform: translateX(20px);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
   }
 }
