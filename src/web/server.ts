@@ -1,157 +1,106 @@
-import { isMilestoneId, isMilestoneStatus } from "../milestone";
-import {
-  listMilestones,
-  readMilestone,
-  resolveMilestonesDir,
-  writeMilestone,
-} from "../milestone-store";
-import { listTasks, readTask, resolveTasksDir, writeTask } from "../store";
-import { isTaskId, isTaskStatus, taskIdFromNumber, taskIdNumber } from "../task";
-import index from "./index.html";
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { Readable } from "node:stream";
+import { apiRoutes } from "./api";
+import { compileRoutes, matchRoute } from "./router";
 
-const server = Bun.serve({
-  routes: {
-    "/": index,
-    "/api/tasks": {
-      async GET() {
-        const tasks = await listTasks(resolveTasksDir());
-        return Response.json(tasks);
-      },
-      async POST(req) {
-        const body = await req.json();
-        const title = typeof body.title === "string" ? body.title.trim() : "";
-        if (title === "") {
-          return Response.json({ error: "title is required" }, { status: 400 });
-        }
+const distDir = path.join(import.meta.dirname, "..", "..", "dist", "web");
 
-        let milestoneId: string | null = null;
-        if (body.milestone !== null && body.milestone !== undefined) {
-          if (!isMilestoneId(body.milestone)) {
-            return Response.json({ error: "invalid milestone id" }, { status: 400 });
-          }
-          try {
-            await readMilestone(resolveMilestonesDir(), body.milestone);
-          } catch {
-            return Response.json({ error: "milestone not found" }, { status: 400 });
-          }
-          milestoneId = body.milestone;
-        }
+const MIME_TYPES: Record<string, string> = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".ico": "image/x-icon",
+};
 
-        const tasksDir = resolveTasksDir();
-        const tasks = await listTasks(tasksDir);
-        const nextNumber = tasks.reduce((max, task) => Math.max(max, taskIdNumber(task.id)), 0) + 1;
-        const id = taskIdFromNumber(nextNumber);
-        const task = {
-          id,
-          title,
-          status: "draft" as const,
-          parent: null,
-          milestone: milestoneId,
-          body: "",
-        };
-        await writeTask(tasksDir, task);
-        return Response.json(task, { status: 201 });
-      },
-    },
-    "/api/tasks/:id": {
-      async PATCH(req) {
-        const id = req.params.id;
-        if (!isTaskId(id)) {
-          return Response.json({ error: "invalid task id" }, { status: 400 });
-        }
+async function serveStatic(pathname: string): Promise<Response | null> {
+  const relativePath = pathname === "/" ? "index.html" : pathname.replace(/^\//, "");
+  const filePath = path.join(distDir, relativePath);
+  if (!filePath.startsWith(distDir)) {
+    return null;
+  }
+  try {
+    const data = await readFile(filePath);
+    const ext = path.extname(filePath);
+    return new Response(data, {
+      headers: { "Content-Type": MIME_TYPES[ext] ?? "application/octet-stream" },
+    });
+  } catch {
+    return null;
+  }
+}
 
-        const tasksDir = resolveTasksDir();
-        let task: Awaited<ReturnType<typeof readTask>>;
-        try {
-          task = await readTask(tasksDir, id);
-        } catch {
-          return Response.json({ error: "task not found" }, { status: 404 });
-        }
+const compiledRoutes = compileRoutes(apiRoutes);
 
-        const body = await req.json();
-        if (body.title !== undefined) {
-          if (typeof body.title !== "string" || body.title.trim() === "") {
-            return Response.json({ error: "title must be a non-empty string" }, { status: 400 });
-          }
-          task.title = body.title;
-        }
-        if (body.status !== undefined) {
-          if (!isTaskStatus(body.status)) {
-            return Response.json({ error: "invalid status" }, { status: 400 });
-          }
-          task.status = body.status;
-        }
-        if (body.body !== undefined) {
-          if (typeof body.body !== "string") {
-            return Response.json({ error: "body must be a string" }, { status: 400 });
-          }
-          task.body = body.body;
-        }
-        if (body.milestone !== undefined) {
-          if (body.milestone !== null) {
-            if (!isMilestoneId(body.milestone)) {
-              return Response.json({ error: "invalid milestone id" }, { status: 400 });
-            }
-            try {
-              await readMilestone(resolveMilestonesDir(), body.milestone);
-            } catch {
-              return Response.json({ error: "milestone not found" }, { status: 400 });
-            }
-          }
-          task.milestone = body.milestone;
-        }
+async function handleRequest(request: Request): Promise<Response> {
+  const url = new URL(request.url);
+  const matched = matchRoute(compiledRoutes, url.pathname, request.method);
+  if (matched) {
+    return matched.handler(request, matched.params);
+  }
+  const staticResponse = await serveStatic(url.pathname);
+  if (staticResponse) {
+    return staticResponse;
+  }
+  return new Response("Not Found", { status: 404 });
+}
 
-        await writeTask(tasksDir, task);
-        return Response.json(task);
-      },
-    },
-    "/api/milestones": {
-      async GET() {
-        const milestones = await listMilestones(resolveMilestonesDir());
-        return Response.json(milestones);
-      },
-    },
-    "/api/milestones/:id": {
-      async PATCH(req) {
-        const id = req.params.id;
-        if (!isMilestoneId(id)) {
-          return Response.json({ error: "invalid milestone id" }, { status: 400 });
-        }
+function toWebRequest(nodeReq: IncomingMessage): Request {
+  const host = nodeReq.headers.host ?? "localhost";
+  const url = `http://${host}${nodeReq.url ?? "/"}`;
+  const headers = new Headers();
+  for (const [key, value] of Object.entries(nodeReq.headers)) {
+    if (value === undefined) {
+      continue;
+    }
+    if (Array.isArray(value)) {
+      for (const v of value) {
+        headers.append(key, v);
+      }
+    } else {
+      headers.set(key, value);
+    }
+  }
+  const hasBody = nodeReq.method !== "GET" && nodeReq.method !== "HEAD";
+  return new Request(url, {
+    method: nodeReq.method,
+    headers,
+    body: hasBody ? (Readable.toWeb(nodeReq) as unknown as ReadableStream) : undefined,
+    duplex: hasBody ? "half" : undefined,
+  } as RequestInit);
+}
 
-        const milestonesDir = resolveMilestonesDir();
-        let milestone: Awaited<ReturnType<typeof readMilestone>>;
-        try {
-          milestone = await readMilestone(milestonesDir, id);
-        } catch {
-          return Response.json({ error: "milestone not found" }, { status: 404 });
-        }
+async function writeWebResponse(response: Response, nodeRes: ServerResponse): Promise<void> {
+  nodeRes.statusCode = response.status;
+  response.headers.forEach((value, key) => {
+    nodeRes.setHeader(key, value);
+  });
+  if (!response.body) {
+    nodeRes.end();
+    return;
+  }
+  const buffer = Buffer.from(await response.arrayBuffer());
+  nodeRes.end(buffer);
+}
 
-        const body = await req.json();
-        if (body.title !== undefined) {
-          if (typeof body.title !== "string" || body.title.trim() === "") {
-            return Response.json({ error: "title must be a non-empty string" }, { status: 400 });
-          }
-          milestone.title = body.title;
-        }
-        if (body.status !== undefined) {
-          if (!isMilestoneStatus(body.status)) {
-            return Response.json({ error: "invalid status" }, { status: 400 });
-          }
-          milestone.status = body.status;
-        }
-        if (body.body !== undefined) {
-          if (typeof body.body !== "string") {
-            return Response.json({ error: "body must be a string" }, { status: 400 });
-          }
-          milestone.body = body.body;
-        }
+const port = Number(process.env.PORT ?? 3000);
 
-        await writeMilestone(milestonesDir, milestone);
-        return Response.json(milestone);
-      },
-    },
-  },
-  development: true,
+const server = createServer(async (nodeReq, nodeRes) => {
+  try {
+    const request = toWebRequest(nodeReq);
+    const response = await handleRequest(request);
+    await writeWebResponse(response, nodeRes);
+  } catch (error) {
+    console.error(error);
+    nodeRes.statusCode = 500;
+    nodeRes.end("Internal Server Error");
+  }
 });
 
-console.log(`rrmap web UI: ${server.url}`);
+server.listen(port, () => {
+  console.log(`rrmap web UI: http://localhost:${port}`);
+});
