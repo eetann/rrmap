@@ -113,7 +113,7 @@ export function App() {
         tasks={tasks}
         onOpenMilestone={(id) => setOpenPanel({ type: "milestone", id })}
       />
-      <div className="flex-1 px-14 py-11 pb-16">
+      <div className="min-w-0 flex-1 px-14 py-11 pb-16">
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-[23px] font-bold">タスク</h1>
           <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-muted-foreground">

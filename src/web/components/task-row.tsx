@@ -32,7 +32,7 @@ export function TaskRow({ task, onClick }: { task: Task; onClick: () => void }) 
         )}
       </div>
       <div
-        className="flex-1 text-sm leading-relaxed"
+        className="min-w-0 flex-1 break-words text-sm leading-relaxed"
         style={
           task.status === "cancelled"
             ? { textDecoration: "line-through", color: "var(--muted-foreground)" }
