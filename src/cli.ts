@@ -5,6 +5,7 @@ import { formatCommand } from "./commands/format";
 import { listCommand } from "./commands/list";
 import { milestoneCommand } from "./commands/milestone";
 import { showCommand } from "./commands/show";
+import { webCommand } from "./commands/web";
 
 try {
   await cli(process.argv.slice(2), listCommand, {
@@ -19,6 +20,7 @@ try {
       edit: editCommand,
       milestone: milestoneCommand,
       format: formatCommand,
+      web: webCommand,
     },
   });
 } catch (error) {

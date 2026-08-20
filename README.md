@@ -87,12 +87,10 @@ rrmap create "パスワードリセット機能" --parent TASK-0001
 
 ```bash
 cd ~/my-app
-bun --hot /path/to/rrmap/src/web/server.ts
+rrmap web
 ```
 
 ブラウザで表示されたURL（デフォルトは http://localhost:3000 ）を開くと、上のスクリーンショットのような一覧・詳細編集ができます。
-
-> **既知の制限:** WebUIの見た目（Tailwind CSS）は、起動時のカレントディレクトリ配下をスキャンして生成される仕組みのため、rrmap自身のソースを含まないプロジェクトディレクトリから起動すると、スタイルが正しく当たらないことがあります（[TASK-0007](.rrmap/tasks/TASK-0007.md)で対応予定）。現状はrrmapのタスク・マイルストーンを直接見比べたい場合はrrmapのリポジトリ自身をcloneした場所で`bun run dev`する運用を推奨します。
 
 ## ステータス
 
@@ -124,6 +122,7 @@ rrmap milestone create <title>               # マイルストーン作成（ID�
 rrmap milestone edit <id> [--status <status>] [--title <title>]
 
 rrmap format   # タスク・マイルストーンのMarkdownフォーマットを表示
+rrmap web      # Web UIを起動
 ```
 
 各コマンドの詳細は`--help`でも確認できます。
@@ -134,7 +133,7 @@ rrmapはAIと一緒にロードマップを育てていくことを想定した�
 
 ## サンプル
 
-[`demo/`](demo/)ディレクトリに、簡単なToDoアプリ開発を想定したサンプルのタスク・マイルストーンを置いています。上のスクリーンショットもこのデータを元にしています。CLIの動きを試したい場合は、`demo/`をカレントディレクトリにして`rrmap list`や`rrmap show TASK-0001`を実行してみてください（WebUIは前述の制限により`demo/`から起動してもスタイルが当たりません）。
+[`demo/`](demo/)ディレクトリに、簡単なToDoアプリ開発を想定したサンプルのタスク・マイルストーンを置いています。上のスクリーンショットもこのデータを元にしています。動きを試したい場合は、`demo/`をカレントディレクトリにして`rrmap list`や`rrmap web`を実行してみてください。
 
 ## もっと詳しく
 
