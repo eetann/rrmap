@@ -1,5 +1,6 @@
 import { TASK_STATUS_META } from "@/lib/status";
 import type { Task } from "../../task";
+import { CopyIdButton } from "./copy-id-button";
 import { CheckIcon } from "./icons";
 
 export function TaskRow({ task, onClick }: { task: Task; onClick: () => void }) {
@@ -40,7 +41,10 @@ export function TaskRow({ task, onClick }: { task: Task; onClick: () => void }) 
       >
         {task.title}
       </div>
-      <div className="flex-shrink-0 text-xs text-muted-foreground tabular-nums">#{task.id}</div>
+      <div className="flex flex-shrink-0 items-center gap-1">
+        <span className="text-xs text-muted-foreground tabular-nums">{task.id}</span>
+        <CopyIdButton id={task.id} />
+      </div>
     </div>
   );
 }

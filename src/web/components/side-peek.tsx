@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { MILESTONE_STATUS_META, MILESTONE_STATUS_OPTIONS, TASK_STATUS_META, TASK_STATUS_OPTIONS } from "@/lib/status";
 import type { Milestone, MilestoneStatus } from "../../milestone";
 import type { Task, TaskStatus } from "../../task";
+import { CopyIdButton } from "./copy-id-button";
 import { XIcon } from "./icons";
 
 export type SidePeekTarget =
@@ -41,7 +42,7 @@ export function SidePeek({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  const idLabel = target.type === "task" ? `#${target.task.id}` : target.milestone.id;
+  const idLabel = target.type === "task" ? target.task.id : target.milestone.id;
   const title = target.type === "task" ? target.task.title : target.milestone.title;
   const body = target.type === "task" ? target.task.body : target.milestone.body;
   const statusMeta =
@@ -85,7 +86,10 @@ export function SidePeek({
         style={{ animation: "side-peek-slide-in 160ms ease-out" }}
       >
         <div className="flex flex-shrink-0 items-center justify-between border-b border-border px-5 py-4">
-          <span className="text-xs text-muted-foreground tabular-nums">{idLabel}</span>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-muted-foreground tabular-nums">{idLabel}</span>
+            <CopyIdButton id={idLabel} />
+          </div>
           <button
             type="button"
             onClick={onClose}
