@@ -24,7 +24,7 @@ export function SidePeek({
   onMilestoneChange: (id: string, patch: Partial<Pick<Milestone, "title" | "status" | "body">>, debounce?: boolean) => void;
   onOpenTask: (id: string) => void;
 }) {
-  const titleRef = useRef<HTMLInputElement>(null);
+  const titleRef = useRef<HTMLTextAreaElement>(null);
   const targetKey = target.type === "task" ? `task-${target.task.id}` : `milestone-${target.milestone.id}`;
 
   useEffect(() => {
@@ -47,6 +47,15 @@ export function SidePeek({
   const body = target.type === "task" ? target.task.body : target.milestone.body;
   const statusMeta =
     target.type === "task" ? TASK_STATUS_META[target.task.status] : MILESTONE_STATUS_META[target.milestone.status];
+
+  useEffect(() => {
+    const el = titleRef.current;
+    if (!el) {
+      return;
+    }
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [title]);
 
   const handleTitleChange = (value: string) => {
     if (target.type === "task") {
@@ -92,12 +101,17 @@ export function SidePeek({
         </button>
       </div>
       <div className="flex flex-1 flex-col gap-4.5 overflow-y-auto px-6 py-5.5">
-        <input
+        <textarea
           ref={titleRef}
-          type="text"
+          rows={1}
           value={title}
           onChange={(e) => handleTitleChange(e.target.value)}
-          className="w-full border-b border-transparent bg-transparent py-1 text-[19px] font-bold text-foreground outline-none focus:border-primary"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+            }
+          }}
+          className="w-full resize-none overflow-hidden break-words border-b border-transparent bg-transparent py-1 text-[19px] font-bold leading-snug text-foreground outline-none focus:border-primary"
         />
 
         <div className="flex items-center gap-3 text-[13px]">
