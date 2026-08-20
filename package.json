@@ -5,13 +5,19 @@
   "private": true,
   "scripts": {
     "rrmap": "bun run src/cli.ts",
-    "dev": "bun --hot src/web/server.ts"
+    "dev": "bun --hot src/web/server.ts",
+    "lint": "oxlint src",
+    "lint:fix": "oxlint --fix src",
+    "format": "oxfmt src",
+    "format:check": "oxfmt --check src"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "bun-plugin-tailwind": "^0.1.2",
+    "oxfmt": "^0.63.0",
+    "oxlint": "^1.78.0",
     "tailwindcss": "^4.3.3"
   },
   "peerDependencies": {
