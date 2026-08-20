@@ -1,7 +1,8 @@
-export function parseTaskId(raw: string): number {
-  const id = Number(raw);
-  if (!Number.isInteger(id)) {
+import { isTaskId } from "../task";
+
+export function parseTaskId(raw: string): string {
+  if (!isTaskId(raw)) {
     throw new Error(`invalid task id: ${raw}`);
   }
-  return id;
+  return raw;
 }

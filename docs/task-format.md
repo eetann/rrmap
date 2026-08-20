@@ -6,7 +6,7 @@
 
 ```yaml
 ---
-id: 1
+id: TASK-0001
 title: データモデル・ファイル設計
 status: draft
 parent: null
@@ -14,7 +14,7 @@ milestone: null
 ---
 ```
 
-- `id`: タスクの一意なID（連番）
+- `id`: タスクの一意なID。`TASK-`+ゼロ埋め連番（例: `TASK-0001`）
 - `title`: タスクのタイトル
 - `status`: タスクの状態。以下のいずれか
   - `draft`: とりあえず雑に書いた
@@ -22,7 +22,7 @@ milestone: null
   - `in_progress`: 実装中
   - `done`: 実装済み
   - `cancelled`: 中止
-- `parent`: 分割元の親タスクのid。トップレベルのタスクは`null`
+- `parent`: 分割元の親タスクのid（`TASK-0001`の形式）。トップレベルのタスクは`null`
   - 親子関係は1階層のみ。`parent`を持つタスク（子タスク）はさらに子タスクを持てない
   - 子タスクの一覧は、`parent`が自分のidと一致するタスクファイルを逆引きして求める（親側にリストは持たせない）
 - `milestone`: 所属するマイルストーンのid。どのマイルストーンにも属さないタスクは`null`（[milestone-format.md](./milestone-format.md)参照）

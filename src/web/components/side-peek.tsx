@@ -19,9 +19,9 @@ export function SidePeek({
   target: SidePeekTarget;
   milestones: Milestone[];
   onClose: () => void;
-  onTaskChange: (id: number, patch: Partial<Pick<Task, "title" | "status" | "milestone" | "body">>, debounce?: boolean) => void;
+  onTaskChange: (id: string, patch: Partial<Pick<Task, "title" | "status" | "milestone" | "body">>, debounce?: boolean) => void;
   onMilestoneChange: (id: string, patch: Partial<Pick<Milestone, "title" | "status" | "body">>, debounce?: boolean) => void;
-  onOpenTask: (id: number) => void;
+  onOpenTask: (id: string) => void;
 }) {
   const titleRef = useRef<HTMLInputElement>(null);
   const targetKey = target.type === "task" ? `task-${target.task.id}` : `milestone-${target.milestone.id}`;

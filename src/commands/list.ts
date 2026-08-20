@@ -2,6 +2,7 @@ import { define } from "gunshi";
 import { listTasks, resolveTasksDir } from "../store";
 import { TASK_STATUSES } from "../task";
 import { parseMilestoneId } from "./milestone-id";
+import { parseTaskId } from "./task-id";
 
 export const listCommand = define({
   name: "list",
@@ -13,7 +14,7 @@ export const listCommand = define({
       description: "ステータスで絞り込む",
     },
     parent: {
-      type: "number",
+      type: "string",
       description: "親タスクidで絞り込む",
     },
     milestone: {
@@ -29,7 +30,8 @@ export const listCommand = define({
       tasks = tasks.filter((task) => task.status === ctx.values.status);
     }
     if (ctx.values.parent !== undefined) {
-      tasks = tasks.filter((task) => task.parent === ctx.values.parent);
+      const parent = parseTaskId(ctx.values.parent);
+      tasks = tasks.filter((task) => task.parent === parent);
     }
     if (ctx.values.milestone !== undefined) {
       const milestone = parseMilestoneId(ctx.values.milestone);

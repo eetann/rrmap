@@ -27,15 +27,15 @@ describe("store", () => {
 
   test("writeTask then readTask round-trips", async () => {
     await writeTask(tasksDir, {
-      id: 1,
+      id: "TASK-0001",
       title: "テスト",
       status: "draft",
       parent: null,
       milestone: null,
       body: "本文",
     });
-    expect(await readTask(tasksDir, 1)).toEqual({
-      id: 1,
+    expect(await readTask(tasksDir, "TASK-0001")).toEqual({
+      id: "TASK-0001",
       title: "テスト",
       status: "draft",
       parent: null,
@@ -45,12 +45,12 @@ describe("store", () => {
   });
 
   test("readTask throws for a missing id", async () => {
-    await expect(readTask(tasksDir, 999)).rejects.toThrow("task not found: 999");
+    await expect(readTask(tasksDir, "TASK-0999")).rejects.toThrow("task not found: TASK-0999");
   });
 
   test("listTasks sorts by id", async () => {
     await writeTask(tasksDir, {
-      id: 2,
+      id: "TASK-0002",
       title: "b",
       status: "draft",
       parent: null,
@@ -58,7 +58,7 @@ describe("store", () => {
       body: "",
     });
     await writeTask(tasksDir, {
-      id: 1,
+      id: "TASK-0001",
       title: "a",
       status: "draft",
       parent: null,
@@ -66,6 +66,6 @@ describe("store", () => {
       body: "",
     });
     const tasks = await listTasks(tasksDir);
-    expect(tasks.map((task) => task.id)).toEqual([1, 2]);
+    expect(tasks.map((task) => task.id)).toEqual(["TASK-0001", "TASK-0002"]);
   });
 });

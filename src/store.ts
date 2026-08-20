@@ -1,6 +1,6 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parseTask, stringifyTask, taskFileName, type Task } from "./task";
+import { parseTask, stringifyTask, taskFileName, taskIdNumber, type Task } from "./task";
 
 export function resolveTasksDir(baseDir: string = process.cwd()): string {
   return join(baseDir, ".rrmap", "tasks");
@@ -27,10 +27,10 @@ export async function listTasks(tasksDir: string): Promise<Task[]> {
       return parseTask(raw);
     }),
   );
-  return tasks.sort((a, b) => a.id - b.id);
+  return tasks.sort((a, b) => taskIdNumber(a.id) - taskIdNumber(b.id));
 }
 
-export async function readTask(tasksDir: string, id: number): Promise<Task> {
+export async function readTask(tasksDir: string, id: string): Promise<Task> {
   const filePath = join(tasksDir, taskFileName(id));
   let raw: string;
   try {

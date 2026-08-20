@@ -13,7 +13,7 @@ status: planned
 ```
 
 - `id`: マイルストーンの一意なID。`MILESTONE-`+ゼロ埋め連番（例: `MILESTONE-0001`）
-  - タスクのid（単純な数値の連番）と見分けやすくするため、prefix付きの形式にしている
+  - タスクのid（[task-format.md](./task-format.md)参照）と見分けやすくするため、`MILESTONE-`のprefixを付けている
 - `title`: マイルストーンのタイトル
 - `status`: マイルストーンの状態。以下のいずれか
   - `planned`: まだ着手していない

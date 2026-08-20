@@ -12,13 +12,15 @@ export const TASK_STATUSES = [
 export type TaskStatus = (typeof TASK_STATUSES)[number];
 
 export interface Task {
-  id: number;
+  id: string;
   title: string;
   status: TaskStatus;
-  parent: number | null;
+  parent: string | null;
   milestone: string | null;
   body: string;
 }
+
+const TASK_ID_PATTERN = /^TASK-(\d{4,})$/;
 
 export function isTaskStatus(value: unknown): value is TaskStatus {
   return (
@@ -27,15 +29,31 @@ export function isTaskStatus(value: unknown): value is TaskStatus {
   );
 }
 
-export function taskFileName(id: number): string {
+export function isTaskId(value: unknown): value is string {
+  return typeof value === "string" && TASK_ID_PATTERN.test(value);
+}
+
+export function taskIdFromNumber(n: number): string {
+  return `TASK-${String(n).padStart(4, "0")}`;
+}
+
+export function taskIdNumber(id: string): number {
+  const match = TASK_ID_PATTERN.exec(id);
+  if (!match) {
+    throw new Error(`invalid task id: ${id}`);
+  }
+  return Number(match[1]);
+}
+
+export function taskFileName(id: string): string {
   return `${id}.md`;
 }
 
 export function parseTask(raw: string): Task {
   const { data, content } = matter(raw);
 
-  if (typeof data.id !== "number" || !Number.isInteger(data.id)) {
-    throw new Error(`invalid task frontmatter: "id" must be an integer`);
+  if (!isTaskId(data.id)) {
+    throw new Error(`invalid task frontmatter: "id" must match TASK-NNNN`);
   }
   if (typeof data.title !== "string" || data.title.trim() === "") {
     throw new Error(`invalid task frontmatter: "title" must be a non-empty string`);
@@ -45,12 +63,8 @@ export function parseTask(raw: string): Task {
       `invalid task frontmatter: "status" must be one of ${TASK_STATUSES.join(", ")}`,
     );
   }
-  if (
-    data.parent !== null &&
-    data.parent !== undefined &&
-    (typeof data.parent !== "number" || !Number.isInteger(data.parent))
-  ) {
-    throw new Error(`invalid task frontmatter: "parent" must be an integer or null`);
+  if (data.parent !== null && data.parent !== undefined && !isTaskId(data.parent)) {
+    throw new Error(`invalid task frontmatter: "parent" must be a task id or null`);
   }
   if (
     data.milestone !== null &&

@@ -1,7 +1,7 @@
 import { isMilestoneId, isMilestoneStatus } from "../milestone";
 import { listMilestones, readMilestone, resolveMilestonesDir, writeMilestone } from "../milestone-store";
 import { listTasks, readTask, resolveTasksDir, writeTask } from "../store";
-import { isTaskStatus } from "../task";
+import { isTaskId, isTaskStatus, taskIdFromNumber, taskIdNumber } from "../task";
 import index from "./index.html";
 
 const server = Bun.serve({
@@ -34,7 +34,8 @@ const server = Bun.serve({
 
         const tasksDir = resolveTasksDir();
         const tasks = await listTasks(tasksDir);
-        const id = tasks.reduce((max, task) => Math.max(max, task.id), 0) + 1;
+        const nextNumber = tasks.reduce((max, task) => Math.max(max, taskIdNumber(task.id)), 0) + 1;
+        const id = taskIdFromNumber(nextNumber);
         const task = {
           id,
           title,
@@ -49,8 +50,8 @@ const server = Bun.serve({
     },
     "/api/tasks/:id": {
       async PATCH(req) {
-        const id = Number(req.params.id);
-        if (!Number.isInteger(id)) {
+        const id = req.params.id;
+        if (!isTaskId(id)) {
           return Response.json({ error: "invalid task id" }, { status: 400 });
         }
 

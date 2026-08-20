@@ -6,7 +6,7 @@ import { MilestoneSection } from "./components/milestone-section";
 import { Sidebar } from "./components/sidebar";
 import { SidePeek, type SidePeekTarget } from "./components/side-peek";
 
-type OpenPanel = { type: "task"; id: number } | { type: "milestone"; id: string } | null;
+type OpenPanel = { type: "task"; id: string } | { type: "milestone"; id: string } | null;
 
 export function App() {
   const [tasks, setTasks] = useState<Task[] | null>(null);
@@ -53,7 +53,7 @@ export function App() {
   );
 
   const updateTask = useCallback(
-    (id: number, patch: Partial<Pick<Task, "title" | "status" | "milestone" | "body">>, debounce = false) => {
+    (id: string, patch: Partial<Pick<Task, "title" | "status" | "milestone" | "body">>, debounce = false) => {
       setTasks((prev) => prev?.map((t) => (t.id === id ? { ...t, ...patch } : t)) ?? prev);
       const field = Object.keys(patch)[0] ?? "misc";
       schedulePatch(`/api/tasks/${id}`, `task-${id}-${field}`, patch, debounce);

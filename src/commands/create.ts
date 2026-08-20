@@ -1,7 +1,9 @@
 import { define } from "gunshi";
 import { readMilestone, resolveMilestonesDir } from "../milestone-store";
 import { listTasks, resolveTasksDir, writeTask } from "../store";
+import { taskIdFromNumber, taskIdNumber } from "../task";
 import { parseMilestoneId } from "./milestone-id";
+import { parseTaskId } from "./task-id";
 
 export const createCommand = define({
   name: "create",
@@ -12,7 +14,7 @@ export const createCommand = define({
       description: "タスクのタイトル",
     },
     parent: {
-      type: "number",
+      type: "string",
       description: "分割元の親タスクid",
     },
     milestone: {
@@ -25,14 +27,16 @@ export const createCommand = define({
     const tasksDir = resolveTasksDir();
     const tasks = await listTasks(tasksDir);
 
+    let parentId: string | null = null;
     if (parent !== undefined) {
-      const parentTask = tasks.find((task) => task.id === parent);
+      parentId = parseTaskId(parent);
+      const parentTask = tasks.find((task) => task.id === parentId);
       if (!parentTask) {
-        throw new Error(`parent task not found: #${parent}`);
+        throw new Error(`parent task not found: #${parentId}`);
       }
       if (parentTask.parent !== null) {
         throw new Error(
-          `parent task #${parent} is itself a child task; nesting beyond one level is not allowed`,
+          `parent task #${parentId} is itself a child task; nesting beyond one level is not allowed`,
         );
       }
     }
@@ -43,12 +47,13 @@ export const createCommand = define({
       await readMilestone(resolveMilestonesDir(), milestoneId);
     }
 
-    const id = tasks.reduce((max, task) => Math.max(max, task.id), 0) + 1;
+    const nextNumber = tasks.reduce((max, task) => Math.max(max, taskIdNumber(task.id)), 0) + 1;
+    const id = taskIdFromNumber(nextNumber);
     await writeTask(tasksDir, {
       id,
       title,
       status: "draft",
-      parent: parent ?? null,
+      parent: parentId,
       milestone: milestoneId,
       body: "",
     });

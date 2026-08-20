@@ -13,7 +13,7 @@ export function MilestoneSection({
 }: {
   milestone: Milestone | null;
   tasks: Task[];
-  onOpenTask: (id: number) => void;
+  onOpenTask: (id: string) => void;
   onOpenMilestone: (id: string) => void;
   onAddTask: (title: string) => Promise<void>;
 }) {
