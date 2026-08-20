@@ -45,7 +45,9 @@ export function Sidebar({
                 className="block h-1.5 w-1.5 flex-shrink-0 rounded-full"
                 style={{
                   background:
-                    milestone.status === "completed" ? "var(--status-done)" : "var(--muted-foreground)",
+                    milestone.status === "completed"
+                      ? "var(--status-done)"
+                      : "var(--muted-foreground)",
                 }}
               />
               <span className="flex-1 truncate text-xs">{milestone.title}</span>

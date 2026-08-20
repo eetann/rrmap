@@ -1,5 +1,10 @@
 import { useEffect, useRef } from "react";
-import { MILESTONE_STATUS_META, MILESTONE_STATUS_OPTIONS, TASK_STATUS_META, TASK_STATUS_OPTIONS } from "@/lib/status";
+import {
+  MILESTONE_STATUS_META,
+  MILESTONE_STATUS_OPTIONS,
+  TASK_STATUS_META,
+  TASK_STATUS_OPTIONS,
+} from "@/lib/status";
 import type { Milestone, MilestoneStatus } from "../../milestone";
 import type { Task, TaskStatus } from "../../task";
 import { CopyIdButton } from "./copy-id-button";
@@ -20,12 +25,21 @@ export function SidePeek({
   target: SidePeekTarget;
   milestones: Milestone[];
   onClose: () => void;
-  onTaskChange: (id: string, patch: Partial<Pick<Task, "title" | "status" | "milestone" | "body">>, debounce?: boolean) => void;
-  onMilestoneChange: (id: string, patch: Partial<Pick<Milestone, "title" | "status" | "body">>, debounce?: boolean) => void;
+  onTaskChange: (
+    id: string,
+    patch: Partial<Pick<Task, "title" | "status" | "milestone" | "body">>,
+    debounce?: boolean,
+  ) => void;
+  onMilestoneChange: (
+    id: string,
+    patch: Partial<Pick<Milestone, "title" | "status" | "body">>,
+    debounce?: boolean,
+  ) => void;
   onOpenTask: (id: string) => void;
 }) {
   const titleRef = useRef<HTMLTextAreaElement>(null);
-  const targetKey = target.type === "task" ? `task-${target.task.id}` : `milestone-${target.milestone.id}`;
+  const targetKey =
+    target.type === "task" ? `task-${target.task.id}` : `milestone-${target.milestone.id}`;
 
   useEffect(() => {
     titleRef.current?.focus();
@@ -46,7 +60,9 @@ export function SidePeek({
   const title = target.type === "task" ? target.task.title : target.milestone.title;
   const body = target.type === "task" ? target.task.body : target.milestone.body;
   const statusMeta =
-    target.type === "task" ? TASK_STATUS_META[target.task.status] : MILESTONE_STATUS_META[target.milestone.status];
+    target.type === "task"
+      ? TASK_STATUS_META[target.task.status]
+      : MILESTONE_STATUS_META[target.milestone.status];
 
   useEffect(() => {
     const el = titleRef.current;
@@ -147,7 +163,9 @@ export function SidePeek({
             <select
               value={target.task.milestone ?? ""}
               onChange={(e) =>
-                onTaskChange(target.task.id, { milestone: e.target.value === "" ? null : e.target.value })
+                onTaskChange(target.task.id, {
+                  milestone: e.target.value === "" ? null : e.target.value,
+                })
               }
               className="flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-[13px] text-foreground"
             >

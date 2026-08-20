@@ -1,11 +1,6 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import {
-  type Milestone,
-  milestoneFileName,
-  parseMilestone,
-  stringifyMilestone,
-} from "./milestone";
+import { type Milestone, milestoneFileName, parseMilestone, stringifyMilestone } from "./milestone";
 
 export function resolveMilestonesDir(baseDir: string = process.cwd()): string {
   return join(baseDir, ".rrmap", "milestones");

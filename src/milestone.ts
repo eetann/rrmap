@@ -14,10 +14,7 @@ export interface Milestone {
 const MILESTONE_ID_PATTERN = /^MILESTONE-(\d{4,})$/;
 
 export function isMilestoneStatus(value: unknown): value is MilestoneStatus {
-  return (
-    typeof value === "string" &&
-    (MILESTONE_STATUSES as readonly string[]).includes(value)
-  );
+  return typeof value === "string" && (MILESTONE_STATUSES as readonly string[]).includes(value);
 }
 
 export function isMilestoneId(value: unknown): value is string {

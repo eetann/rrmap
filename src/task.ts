@@ -1,13 +1,7 @@
 import matter from "gray-matter";
 import { isMilestoneId } from "./milestone";
 
-export const TASK_STATUSES = [
-  "draft",
-  "refined",
-  "in_progress",
-  "done",
-  "cancelled",
-] as const;
+export const TASK_STATUSES = ["draft", "refined", "in_progress", "done", "cancelled"] as const;
 
 export type TaskStatus = (typeof TASK_STATUSES)[number];
 
@@ -23,10 +17,7 @@ export interface Task {
 const TASK_ID_PATTERN = /^TASK-(\d{4,})$/;
 
 export function isTaskStatus(value: unknown): value is TaskStatus {
-  return (
-    typeof value === "string" &&
-    (TASK_STATUSES as readonly string[]).includes(value)
-  );
+  return typeof value === "string" && (TASK_STATUSES as readonly string[]).includes(value);
 }
 
 export function isTaskId(value: unknown): value is string {
@@ -66,11 +57,7 @@ export function parseTask(raw: string): Task {
   if (data.parent !== null && data.parent !== undefined && !isTaskId(data.parent)) {
     throw new Error(`invalid task frontmatter: "parent" must be a task id or null`);
   }
-  if (
-    data.milestone !== null &&
-    data.milestone !== undefined &&
-    !isMilestoneId(data.milestone)
-  ) {
+  if (data.milestone !== null && data.milestone !== undefined && !isMilestoneId(data.milestone)) {
     throw new Error(`invalid task frontmatter: "milestone" must be a milestone id or null`);
   }
 

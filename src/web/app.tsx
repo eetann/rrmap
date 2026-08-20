@@ -53,7 +53,11 @@ export function App() {
   );
 
   const updateTask = useCallback(
-    (id: string, patch: Partial<Pick<Task, "title" | "status" | "milestone" | "body">>, debounce = false) => {
+    (
+      id: string,
+      patch: Partial<Pick<Task, "title" | "status" | "milestone" | "body">>,
+      debounce = false,
+    ) => {
       setTasks((prev) => prev?.map((t) => (t.id === id ? { ...t, ...patch } : t)) ?? prev);
       const field = Object.keys(patch)[0] ?? "misc";
       schedulePatch(`/api/tasks/${id}`, `task-${id}-${field}`, patch, debounce);
@@ -62,7 +66,11 @@ export function App() {
   );
 
   const updateMilestone = useCallback(
-    (id: string, patch: Partial<Pick<Milestone, "title" | "status" | "body">>, debounce = false) => {
+    (
+      id: string,
+      patch: Partial<Pick<Milestone, "title" | "status" | "body">>,
+      debounce = false,
+    ) => {
       setMilestones((prev) => prev?.map((m) => (m.id === id ? { ...m, ...patch } : m)) ?? prev);
       const field = Object.keys(patch)[0] ?? "misc";
       schedulePatch(`/api/milestones/${id}`, `milestone-${id}-${field}`, patch, debounce);
@@ -92,7 +100,9 @@ export function App() {
 
   const normalizedQuery = query.trim().toLowerCase();
   const filteredTasks =
-    normalizedQuery === "" ? tasks : tasks.filter((t) => t.title.toLowerCase().includes(normalizedQuery));
+    normalizedQuery === ""
+      ? tasks
+      : tasks.filter((t) => t.title.toLowerCase().includes(normalizedQuery));
   const unassignedTasks = filteredTasks.filter((t) => t.milestone === null);
 
   let target: SidePeekTarget | null = null;
@@ -102,7 +112,11 @@ export function App() {
   } else if (openPanel?.type === "milestone") {
     const milestone = milestones.find((m) => m.id === openPanel.id);
     target = milestone
-      ? { type: "milestone", milestone, relatedTasks: tasks.filter((t) => t.milestone === milestone.id) }
+      ? {
+          type: "milestone",
+          milestone,
+          relatedTasks: tasks.filter((t) => t.milestone === milestone.id),
+        }
       : null;
   }
 

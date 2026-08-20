@@ -1,5 +1,10 @@
 import { isMilestoneId, isMilestoneStatus } from "../milestone";
-import { listMilestones, readMilestone, resolveMilestonesDir, writeMilestone } from "../milestone-store";
+import {
+  listMilestones,
+  readMilestone,
+  resolveMilestonesDir,
+  writeMilestone,
+} from "../milestone-store";
 import { listTasks, readTask, resolveTasksDir, writeTask } from "../store";
 import { isTaskId, isTaskStatus, taskIdFromNumber, taskIdNumber } from "../task";
 import index from "./index.html";

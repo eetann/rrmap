@@ -20,8 +20,7 @@ export const milestoneCreateCommand = define({
     const milestones = await listMilestones(milestonesDir);
 
     const nextNumber =
-      milestones.reduce((max, milestone) => Math.max(max, milestoneIdNumber(milestone.id)), 0) +
-      1;
+      milestones.reduce((max, milestone) => Math.max(max, milestoneIdNumber(milestone.id)), 0) + 1;
     const id = milestoneIdFromNumber(nextNumber);
 
     await writeMilestone(milestonesDir, {
