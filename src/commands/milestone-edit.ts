@@ -7,8 +7,10 @@ export const milestoneEditCommand = define({
   name: "edit",
   description: "マイルストーンを編集する",
   examples: `$ rrmap milestone edit MILESTONE-0001 --status active
+$ rrmap milestone edit MILESTONE-0001 --hidden
+$ rrmap milestone edit MILESTONE-0001 --no-hidden
 
-このコマンドで変更できるのは status / title のみ。本文を書きたい場合は
+このコマンドで変更できるのは status / title / hidden のみ。本文を書きたい場合は
 .rrmap/milestones/MILESTONE-XXXX.md を直接編集してよい（フォーマットは \`rrmap format\` 参照）。`,
   args: {
     id: {
@@ -24,6 +26,10 @@ export const milestoneEditCommand = define({
       type: "string",
       description: "タイトルを変更する",
     },
+    hidden: {
+      type: "boolean",
+      description: "Web UIのタスク一覧から非表示にする（--no-hiddenで再表示）",
+    },
   },
   run: async (ctx) => {
     const id = parseMilestoneId(ctx.values.id);
@@ -35,6 +41,9 @@ export const milestoneEditCommand = define({
     }
     if (ctx.values.title !== undefined) {
       milestone.title = ctx.values.title;
+    }
+    if (ctx.values.hidden !== undefined) {
+      milestone.hidden = ctx.values.hidden;
     }
 
     await writeMilestone(milestonesDir, milestone);

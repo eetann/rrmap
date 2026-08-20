@@ -32,7 +32,7 @@ export function SidePeek({
   ) => void;
   onMilestoneChange: (
     id: string,
-    patch: Partial<Pick<Milestone, "title" | "status" | "body">>,
+    patch: Partial<Pick<Milestone, "title" | "status" | "hidden" | "body">>,
     debounce?: boolean,
   ) => void;
   onOpenTask: (id: string) => void;
@@ -156,6 +156,23 @@ export function SidePeek({
             </select>
           </div>
         </div>
+
+        {target.type === "milestone" && (
+          <div className="flex items-center gap-3 text-[13px]">
+            <span className="w-[88px] flex-shrink-0 text-muted-foreground">タスク一覧</span>
+            <label className="flex items-center gap-2 text-foreground">
+              <input
+                type="checkbox"
+                checked={!target.milestone.hidden}
+                onChange={(e) =>
+                  onMilestoneChange(target.milestone.id, { hidden: !e.target.checked })
+                }
+                className="h-4 w-4 rounded border-border"
+              />
+              表示する
+            </label>
+          </div>
+        )}
 
         {target.type === "task" && (
           <div className="flex items-center gap-3 text-[13px]">

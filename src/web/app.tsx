@@ -78,7 +78,7 @@ export function App() {
   const updateMilestone = useCallback(
     (
       id: string,
-      patch: Partial<Pick<Milestone, "title" | "status" | "body">>,
+      patch: Partial<Pick<Milestone, "title" | "status" | "hidden" | "body">>,
       debounce = false,
     ) => {
       setMilestones((prev) => prev?.map((m) => (m.id === id ? { ...m, ...patch } : m)) ?? prev);
@@ -114,6 +114,8 @@ export function App() {
       ? tasks
       : tasks.filter((t) => t.title.toLowerCase().includes(normalizedQuery));
   const unassignedTasks = filteredTasks.filter((t) => t.milestone === null);
+  const visibleMilestones = milestones.filter((m) => !m.hidden);
+  const hiddenMilestones = milestones.filter((m) => m.hidden);
 
   let target: SidePeekTarget | null = null;
   if (openPanel?.type === "task") {
@@ -133,7 +135,8 @@ export function App() {
   return (
     <div className="flex min-h-screen">
       <Sidebar
-        milestones={milestones}
+        visibleMilestones={visibleMilestones}
+        hiddenMilestones={hiddenMilestones}
         tasks={tasks}
         onOpenMilestone={(id) => setOpenPanel({ type: "milestone", id })}
       />
@@ -152,7 +155,7 @@ export function App() {
           </div>
         </div>
 
-        {milestones.map((milestone) => (
+        {visibleMilestones.map((milestone) => (
           <MilestoneSection
             key={milestone.id}
             milestone={milestone}

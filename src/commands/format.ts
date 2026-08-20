@@ -28,6 +28,7 @@ milestone: null             # 所属マイルストーンid（MILESTONE-XXXX形�
 id: MILESTONE-0001
 title: マイルストーンのタイトル
 status: planned              # ${MILESTONE_STATUSES.join(" | ")}
+hidden: false                # trueにするとWeb UIのタスク一覧から非表示（サイドバーの「非表示のマイルストーン」からは開ける）
 ---
 
 本文は自由なMarkdown。目的・スコープなど残しておきたいことを書く。`);

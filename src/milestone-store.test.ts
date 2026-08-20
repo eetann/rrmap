@@ -35,12 +35,14 @@ describe("milestone-store", () => {
       id: "MILESTONE-0001",
       title: "テスト",
       status: "planned",
+      hidden: false,
       body: "本文",
     });
     expect(await readMilestone(milestonesDir, "MILESTONE-0001")).toEqual({
       id: "MILESTONE-0001",
       title: "テスト",
       status: "planned",
+      hidden: false,
       body: "本文",
     });
   });
@@ -56,12 +58,14 @@ describe("milestone-store", () => {
       id: "MILESTONE-0002",
       title: "b",
       status: "planned",
+      hidden: false,
       body: "",
     });
     await writeMilestone(milestonesDir, {
       id: "MILESTONE-0001",
       title: "a",
       status: "planned",
+      hidden: false,
       body: "",
     });
     const milestones = await listMilestones(milestonesDir);

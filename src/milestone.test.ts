@@ -20,8 +20,20 @@ status: planned
       id: "MILESTONE-0001",
       title: "サンプル",
       status: "planned",
+      hidden: false,
       body: "本文",
     });
+  });
+
+  test("parses hidden: true", () => {
+    const raw = `---
+id: MILESTONE-0001
+title: サンプル
+status: planned
+hidden: true
+---
+本文`;
+    expect(parseMilestone(raw).hidden).toBe(true);
   });
 
   test("throws when id is missing", () => {
@@ -70,6 +82,7 @@ describe("stringifyMilestone", () => {
       id: "MILESTONE-0002",
       title: "往復確認",
       status: "active",
+      hidden: true,
       body: "本文\n複数行",
     };
     expect(parseMilestone(stringifyMilestone(milestone))).toEqual(milestone);

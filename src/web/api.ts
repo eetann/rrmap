@@ -145,6 +145,12 @@ apiApp.patch("/api/milestones/:id", async (c) => {
     }
     milestone.body = body.body;
   }
+  if (body.hidden !== undefined) {
+    if (typeof body.hidden !== "boolean") {
+      return c.json({ error: "hidden must be a boolean" }, 400);
+    }
+    milestone.hidden = body.hidden;
+  }
 
   await writeMilestone(milestonesDir, milestone);
   return c.json(milestone);

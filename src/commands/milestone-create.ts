@@ -27,6 +27,7 @@ export const milestoneCreateCommand = define({
       id,
       title,
       status: "planned",
+      hidden: false,
       body: "",
     });
     console.log(`created milestone ${id}: ${title}`);

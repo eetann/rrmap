@@ -8,6 +8,7 @@ export interface Milestone {
   id: string;
   title: string;
   status: MilestoneStatus;
+  hidden: boolean;
   body: string;
 }
 
@@ -56,6 +57,7 @@ export function parseMilestone(raw: string): Milestone {
     id: data.id,
     title: data.title,
     status: data.status,
+    hidden: data.hidden === true,
     body: content.replace(/^\n+/, "").replace(/\n+$/, ""),
   };
 }
@@ -65,5 +67,6 @@ export function stringifyMilestone(milestone: Milestone): string {
     id: milestone.id,
     title: milestone.title,
     status: milestone.status,
+    hidden: milestone.hidden,
   });
 }

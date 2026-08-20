@@ -18,6 +18,7 @@ export const milestoneShowCommand = define({
     console.log(`# ${milestone.title}`);
     console.log(`id: ${milestone.id}`);
     console.log(`status: ${milestone.status}`);
+    console.log(`hidden: ${milestone.hidden}`);
     console.log("");
     console.log(milestone.body);
   },

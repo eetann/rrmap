@@ -26,7 +26,8 @@ export const milestoneListCommand = define({
     }
 
     for (const milestone of milestones) {
-      console.log(`${milestone.id}\t[${milestone.status}]\t${milestone.title}`);
+      const hiddenLabel = milestone.hidden ? "\t[hidden]" : "";
+      console.log(`${milestone.id}\t[${milestone.status}]\t${milestone.title}${hiddenLabel}`);
     }
   },
 });
