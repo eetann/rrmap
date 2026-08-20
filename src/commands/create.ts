@@ -8,6 +8,10 @@ import { parseTaskId } from "./task-id";
 export const createCommand = define({
   name: "create",
   description: "タスクを作成する",
+  examples: `$ rrmap create "タスクのタイトル"
+$ rrmap create "タスクのタイトル" --milestone MILESTONE-0001
+
+.rrmap/tasks/TASK-XXXX.md を直接作成してもよい（フォーマットは \`rrmap format\` 参照）。`,
   args: {
     title: {
       type: "positional",

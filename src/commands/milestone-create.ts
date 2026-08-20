@@ -5,6 +5,9 @@ import { listMilestones, resolveMilestonesDir, writeMilestone } from "../milesto
 export const milestoneCreateCommand = define({
   name: "create",
   description: "マイルストーンを作成する",
+  examples: `$ rrmap milestone create "マイルストーンのタイトル"
+
+.rrmap/milestones/MILESTONE-XXXX.md を直接作成してもよい（フォーマットは \`rrmap format\` 参照）。`,
   args: {
     title: {
       type: "positional",

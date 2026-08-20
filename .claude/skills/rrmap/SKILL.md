@@ -33,6 +33,7 @@ description: |
 | `rrmap show <id>` | タスクの詳細（本文込み）を表示 |
 | `rrmap create <title> [--parent <id>] [--milestone <id>]` | タスクを作成（IDは自動採番） |
 | `rrmap edit <id> [--status <status>] [--title <title>]` | status/titleを変更 |
+| `rrmap format` | タスク・マイルストーンのMarkdownフォーマットを表示 |
 
 `status`: `draft`（雑に書いた） / `refined`（分割済み・実装を見据えて整理済み） / `in_progress` / `done` / `cancelled`
 
@@ -46,6 +47,8 @@ description: |
 | `rrmap milestone edit <id> [--status <status>] [--title <title>]` | status/titleを変更 |
 
 `status`: `planned` / `active` / `completed`
+
+厳密な最新フォーマットは`rrmap format`でも確認できる（このSKILL.mdの内容と食い違う場合はコマンドの出力を正とする）。
 
 ## タスクファイルのフロントマター
 

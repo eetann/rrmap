@@ -10,7 +10,7 @@ export const editCommand = define({
 $ rrmap edit TASK-0001 --title "新しいタイトル"
 
 このコマンドで変更できるのは status / title のみ。本文（方針・意思決定など）を書きたい場合は
-.rrmap/tasks/TASK-XXXX.md を直接編集してよい（フォーマットは docs/task-format.md 参照）。`,
+.rrmap/tasks/TASK-XXXX.md を直接編集してよい（フォーマットは \`rrmap format\` 参照）。`,
   args: {
     id: {
       type: "positional",
