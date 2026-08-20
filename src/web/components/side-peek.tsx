@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   MILESTONE_STATUS_META,
   MILESTONE_STATUS_OPTIONS,
@@ -9,6 +11,8 @@ import type { Milestone, MilestoneStatus } from "../../milestone";
 import type { Task, TaskStatus } from "../../task";
 import { CopyIdButton } from "./copy-id-button";
 import { XIcon } from "./icons";
+
+const BODY_PLACEHOLDER = "メモを書く（方針・意思決定など）";
 
 export type SidePeekTarget =
   | { type: "task"; task: Task }
@@ -38,13 +42,25 @@ export function SidePeek({
   onOpenTask: (id: string) => void;
 }) {
   const titleRef = useRef<HTMLTextAreaElement>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
   const targetKey =
     target.type === "task" ? `task-${target.task.id}` : `milestone-${target.milestone.id}`;
+  const [isEditingBody, setIsEditingBody] = useState(false);
 
   useEffect(() => {
     titleRef.current?.focus();
     titleRef.current?.select();
   }, []);
+
+  useEffect(() => {
+    setIsEditingBody(false);
+  }, [targetKey]);
+
+  useEffect(() => {
+    if (isEditingBody) {
+      bodyRef.current?.focus();
+    }
+  }, [isEditingBody]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -198,12 +214,37 @@ export function SidePeek({
 
         <div className="h-px bg-border" />
 
-        <textarea
-          value={body}
-          onChange={(e) => handleBodyChange(e.target.value)}
-          placeholder="メモを書く（方針・意思決定など）"
-          className="min-h-[170px] w-full flex-1 resize-y border-none bg-transparent text-[13.5px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
-        />
+        {isEditingBody ? (
+          <textarea
+            ref={bodyRef}
+            value={body}
+            onChange={(e) => handleBodyChange(e.target.value)}
+            onBlur={() => setIsEditingBody(false)}
+            placeholder={BODY_PLACEHOLDER}
+            className="min-h-[170px] w-full flex-1 resize-y border-none bg-transparent text-[13.5px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
+          />
+        ) : (
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setIsEditingBody(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                setIsEditingBody(true);
+              }
+            }}
+            className="min-h-[170px] w-full flex-1 cursor-text rounded-md"
+          >
+            {body.trim() === "" ? (
+              <span className="text-[13.5px] text-muted-foreground">{BODY_PLACEHOLDER}</span>
+            ) : (
+              <div className="prose prose-sm max-w-none text-[13.5px] leading-relaxed text-foreground prose-headings:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-code:before:content-none prose-code:after:content-none [&>:first-child]:mt-0 [&>:last-child]:mb-0 dark:prose-invert">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
+              </div>
+            )}
+          </div>
+        )}
 
         {target.type === "milestone" && (
           <div className="flex flex-col gap-1.5">
