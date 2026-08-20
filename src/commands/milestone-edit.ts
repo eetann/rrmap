@@ -6,6 +6,10 @@ import { parseMilestoneId } from "./milestone-id";
 export const milestoneEditCommand = define({
   name: "edit",
   description: "マイルストーンを編集する",
+  examples: `$ rrmap milestone edit MILESTONE-0001 --status active
+
+このコマンドで変更できるのは status / title のみ。本文を書きたい場合は
+.rrmap/milestones/MILESTONE-XXXX.md を直接編集してよい（フォーマットは docs/milestone-format.md 参照）。`,
   args: {
     id: {
       type: "positional",

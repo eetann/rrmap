@@ -41,8 +41,8 @@
 
 ### AI連携の強化
 
-- [ ] AIエージェントがCLI経由で扱いやすいよう、サブコマンド設計・出力フォーマットを整備する
-- [ ] 必要に応じてMCPサーバー化やSkill化を検討する
+- [x] AIエージェントがCLI経由で扱いやすいよう、サブコマンド設計・出力フォーマットを整備する → タスク/マイルストーンの本文はMarkdownを直接編集してよいことを`--help`（EXAMPLES）とREADMEに明記（`src/commands/edit.ts`・`src/commands/milestone-edit.ts`・`src/commands/list.ts`）
+- [x] 必要に応じてMCPサーバー化やSkill化を検討する → MCPサーバーは不要と判断し、Skill化した → `.claude/skills/rrmap/SKILL.md`（agent-skills-nixでの配布も想定）
 
 ## セルフホスティングへの移行
 

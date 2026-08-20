@@ -6,6 +6,11 @@ import { parseTaskId } from "./task-id";
 export const editCommand = define({
   name: "edit",
   description: "タスクを編集する",
+  examples: `$ rrmap edit TASK-0001 --status in_progress
+$ rrmap edit TASK-0001 --title "新しいタイトル"
+
+このコマンドで変更できるのは status / title のみ。本文（方針・意思決定など）を書きたい場合は
+.rrmap/tasks/TASK-XXXX.md を直接編集してよい（フォーマットは docs/task-format.md 参照）。`,
   args: {
     id: {
       type: "positional",

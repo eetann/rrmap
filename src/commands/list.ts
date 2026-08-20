@@ -7,6 +7,12 @@ import { parseTaskId } from "./task-id";
 export const listCommand = define({
   name: "list",
   description: "タスク一覧を表示する",
+  examples: `$ rrmap list
+$ rrmap list --status in_progress
+$ rrmap show TASK-0001
+
+Tips: タスク・マイルストーンのMarkdownファイル（.rrmap/tasks/, .rrmap/milestones/）は直接編集してよい。
+CLIはID採番や一覧表示など、直接編集より便利な場面で使う想定（フォーマットは docs/task-format.md, docs/milestone-format.md 参照）。`,
   args: {
     status: {
       type: "enum",
