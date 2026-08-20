@@ -1,19 +1,12 @@
-import type { BunRequest } from "bun";
-import { apiRoutes } from "./api";
+import { apiApp } from "./api";
 import index from "./index.html";
 
-const routes: Record<string, unknown> = { "/": index };
-for (const [pattern, methods] of Object.entries(apiRoutes)) {
-  const wrapped: Record<string, (req: BunRequest) => Promise<Response>> = {};
-  for (const [method, handler] of Object.entries(methods)) {
-    wrapped[method] = (req) => handler(req, req.params);
-  }
-  routes[pattern] = wrapped;
-}
-
 const server = Bun.serve({
-  routes,
+  routes: { "/": index },
+  fetch: (req) => apiApp.fetch(req),
   development: true,
-} as Bun.Serve.Options<undefined, never>);
+  // SSE (/api/events) は長時間接続を維持するため、デフォルト10秒のidleTimeoutを無効化する
+  idleTimeout: 0,
+});
 
 console.log(`rrmap web UI (dev): ${server.url}`);

@@ -16,7 +16,7 @@ export function App() {
   const [query, setQuery] = useState("");
   const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     Promise.all([
       fetch("/api/tasks").then((res) => res.json() as Promise<Task[]>),
       fetch("/api/milestones").then((res) => res.json() as Promise<Milestone[]>),
@@ -27,6 +27,16 @@ export function App() {
       })
       .catch((err) => setError(String(err)));
   }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    const source = new EventSource("/api/events");
+    source.addEventListener("changed", () => refresh());
+    return () => source.close();
+  }, [refresh]);
 
   const schedulePatch = useCallback(
     (url: string, key: string, body: Record<string, unknown>, debounce: boolean) => {
