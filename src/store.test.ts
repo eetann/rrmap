@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { listTasks, readTask, resolveTasksDir, writeTask } from "./store";
+import { deleteTask, listTasks, readTask, resolveTasksDir, writeTask } from "./store";
 
 describe("store", () => {
   let dir: string;
@@ -67,5 +67,22 @@ describe("store", () => {
     });
     const tasks = await listTasks(tasksDir);
     expect(tasks.map((task) => task.id)).toEqual(["TASK-0001", "TASK-0002"]);
+  });
+
+  test("deleteTask removes the task file", async () => {
+    await writeTask(tasksDir, {
+      id: "TASK-0001",
+      title: "テスト",
+      status: "draft",
+      parent: null,
+      milestone: null,
+      body: "",
+    });
+    await deleteTask(tasksDir, "TASK-0001");
+    expect(await listTasks(tasksDir)).toEqual([]);
+  });
+
+  test("deleteTask throws for a missing id", async () => {
+    await expect(deleteTask(tasksDir, "TASK-0999")).rejects.toThrow("task not found: TASK-0999");
   });
 });

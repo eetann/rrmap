@@ -10,7 +10,7 @@ import {
 import type { Milestone, MilestoneStatus } from "../../milestone";
 import type { Task, TaskStatus } from "../../task";
 import { CopyIdButton } from "./copy-id-button";
-import { XIcon } from "./icons";
+import { TrashIcon, XIcon } from "./icons";
 
 const BODY_PLACEHOLDER = "メモを書く（方針・意思決定など）";
 
@@ -23,6 +23,7 @@ export function SidePeek({
   milestones,
   onClose,
   onTaskChange,
+  onTaskDelete,
   onMilestoneChange,
   onOpenTask,
 }: {
@@ -34,6 +35,7 @@ export function SidePeek({
     patch: Partial<Pick<Task, "title" | "status" | "milestone" | "body">>,
     debounce?: boolean,
   ) => void;
+  onTaskDelete: (id: string) => void;
   onMilestoneChange: (
     id: string,
     patch: Partial<Pick<Milestone, "title" | "status" | "hidden" | "body">>,
@@ -160,13 +162,33 @@ export function SidePeek({
           <span className="text-xs text-muted-foreground tabular-nums">{idLabel}</span>
           <CopyIdButton id={idLabel} />
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <XIcon />
-        </button>
+        <div className="flex items-center gap-1">
+          {target.type === "task" && (
+            <button
+              type="button"
+              onClick={() => {
+                if (
+                  window.confirm(
+                    `「${target.task.title}」を削除しますか？この操作は取り消せません。`,
+                  )
+                ) {
+                  onTaskDelete(target.task.id);
+                }
+              }}
+              title="タスクを削除"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            >
+              <TrashIcon />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <XIcon />
+          </button>
+        </div>
       </div>
       <div className="flex flex-1 flex-col gap-4.5 overflow-y-auto px-6 py-5.5">
         <textarea

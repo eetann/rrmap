@@ -1,4 +1,4 @@
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parseTask, stringifyTask, taskFileName, taskIdNumber, type Task } from "./task";
 
@@ -48,4 +48,16 @@ export async function writeTask(tasksDir: string, task: Task): Promise<void> {
   await mkdir(tasksDir, { recursive: true });
   const filePath = join(tasksDir, taskFileName(task.id));
   await writeFile(filePath, stringifyTask(task), "utf8");
+}
+
+export async function deleteTask(tasksDir: string, id: string): Promise<void> {
+  const filePath = join(tasksDir, taskFileName(id));
+  try {
+    await unlink(filePath);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      throw new Error(`task not found: ${id}`);
+    }
+    throw error;
+  }
 }

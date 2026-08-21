@@ -101,6 +101,15 @@ export function App() {
     setTasks((prev) => (prev ? [...prev, created] : prev));
   }, []);
 
+  const deleteTask = useCallback(async (id: string) => {
+    const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      return;
+    }
+    setTasks((prev) => prev?.filter((t) => t.id !== id) ?? prev);
+    setOpenPanel((prev) => (prev?.type === "task" && prev.id === id ? null : prev));
+  }, []);
+
   if (error) {
     return <div className="p-6 text-destructive">読み込みに失敗しました: {error}</div>;
   }
@@ -181,6 +190,7 @@ export function App() {
           milestones={milestones}
           onClose={() => setOpenPanel(null)}
           onTaskChange={updateTask}
+          onTaskDelete={deleteTask}
           onMilestoneChange={updateMilestone}
           onOpenTask={(id) => setOpenPanel({ type: "task", id })}
         />

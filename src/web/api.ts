@@ -7,7 +7,7 @@ import {
   resolveMilestonesDir,
   writeMilestone,
 } from "../milestone-store";
-import { listTasks, readTask, resolveTasksDir, writeTask } from "../store";
+import { deleteTask, listTasks, readTask, resolveTasksDir, writeTask } from "../store";
 import { isTaskId, isTaskStatus, taskIdFromNumber, taskIdNumber } from "../task";
 import { createFileWatcher } from "./watch";
 
@@ -105,6 +105,20 @@ apiApp.patch("/api/tasks/:id", async (c) => {
 
   await writeTask(tasksDir, task);
   return c.json(task);
+});
+
+apiApp.delete("/api/tasks/:id", async (c) => {
+  const id = c.req.param("id");
+  if (!isTaskId(id)) {
+    return c.json({ error: "invalid task id" }, 400);
+  }
+
+  try {
+    await deleteTask(resolveTasksDir(), id);
+  } catch {
+    return c.json({ error: "task not found" }, 404);
+  }
+  return c.body(null, 204);
 });
 
 apiApp.get("/api/milestones", async (c) => {
