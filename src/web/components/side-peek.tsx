@@ -48,6 +48,8 @@ export function SidePeek({
   const [isEditingBody, setIsEditingBody] = useState(false);
   const isComposingTitleRef = useRef(false);
   const isComposingBodyRef = useRef(false);
+  const isTitleFocusedRef = useRef(false);
+  const isBodyFocusedRef = useRef(false);
 
   useEffect(() => {
     titleRef.current?.focus();
@@ -58,6 +60,8 @@ export function SidePeek({
     setIsEditingBody(false);
     isComposingTitleRef.current = false;
     isComposingBodyRef.current = false;
+    isTitleFocusedRef.current = false;
+    isBodyFocusedRef.current = false;
   }, [targetKey]);
 
   useEffect(() => {
@@ -87,16 +91,17 @@ export function SidePeek({
   const [titleValue, setTitleValue] = useState(title);
   const [bodyValue, setBodyValue] = useState(body);
 
-  // 自動保存後のSSE再取得でpropsが更新された際、IME変換中に上書きすると
-  // 未確定文字が強制的に確定してしまうため、変換中は同期しない
+  // 自動保存後のSSE再取得でpropsが更新された際、編集中に上書きすると
+  // 未確定文字の確定や入力中の文字が巻き戻ってしまうため、
+  // フォーカス中・IME変換中は同期しない（blur時にflushして追いつかせる）
   useEffect(() => {
-    if (!isComposingTitleRef.current) {
+    if (!isComposingTitleRef.current && !isTitleFocusedRef.current) {
       setTitleValue(title);
     }
   }, [title]);
 
   useEffect(() => {
-    if (!isComposingBodyRef.current) {
+    if (!isComposingBodyRef.current && !isBodyFocusedRef.current) {
       setBodyValue(body);
     }
   }, [body]);
@@ -110,22 +115,30 @@ export function SidePeek({
     el.style.height = `${el.scrollHeight}px`;
   }, [titleValue]);
 
+  const commitTitle = (value: string, debounce: boolean) => {
+    if (target.type === "task") {
+      onTaskChange(target.task.id, { title: value }, debounce);
+    } else {
+      onMilestoneChange(target.milestone.id, { title: value }, debounce);
+    }
+  };
+
+  const commitBody = (value: string, debounce: boolean) => {
+    if (target.type === "task") {
+      onTaskChange(target.task.id, { body: value }, debounce);
+    } else {
+      onMilestoneChange(target.milestone.id, { body: value }, debounce);
+    }
+  };
+
   const handleTitleChange = (value: string) => {
     setTitleValue(value);
-    if (target.type === "task") {
-      onTaskChange(target.task.id, { title: value }, true);
-    } else {
-      onMilestoneChange(target.milestone.id, { title: value }, true);
-    }
+    commitTitle(value, true);
   };
 
   const handleBodyChange = (value: string) => {
     setBodyValue(value);
-    if (target.type === "task") {
-      onTaskChange(target.task.id, { body: value }, true);
-    } else {
-      onMilestoneChange(target.milestone.id, { body: value }, true);
-    }
+    commitBody(value, true);
   };
 
   const handleStatusChange = (value: string) => {
@@ -167,6 +180,13 @@ export function SidePeek({
           onCompositionEnd={(e) => {
             isComposingTitleRef.current = false;
             handleTitleChange(e.currentTarget.value);
+          }}
+          onFocus={() => {
+            isTitleFocusedRef.current = true;
+          }}
+          onBlur={(e) => {
+            isTitleFocusedRef.current = false;
+            commitTitle(e.currentTarget.value, false);
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -256,7 +276,14 @@ export function SidePeek({
               isComposingBodyRef.current = false;
               handleBodyChange(e.currentTarget.value);
             }}
-            onBlur={() => setIsEditingBody(false)}
+            onFocus={() => {
+              isBodyFocusedRef.current = true;
+            }}
+            onBlur={(e) => {
+              isBodyFocusedRef.current = false;
+              setIsEditingBody(false);
+              commitBody(e.currentTarget.value, false);
+            }}
             placeholder={BODY_PLACEHOLDER}
             className="min-h-[170px] w-full flex-1 resize-y border-none bg-transparent text-[13.5px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
           />
