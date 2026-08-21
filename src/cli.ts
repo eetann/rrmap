@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { cli } from "gunshi";
 import { createCommand } from "./commands/create";
 import { editCommand } from "./commands/edit";

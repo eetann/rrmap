@@ -1,9 +1,9 @@
-import path from "node:path";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
+import { getWebDistDir } from "../paths";
 import { apiApp } from "./api";
 
-const distDir = path.join(import.meta.dirname, "..", "..", "dist", "web");
+const distDir = getWebDistDir();
 
 apiApp.use("/*", serveStatic({ root: distDir }));
 
