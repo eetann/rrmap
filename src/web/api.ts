@@ -1,3 +1,4 @@
+import path from "node:path";
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import { isMilestoneId, isMilestoneStatus } from "../milestone";
@@ -14,6 +15,10 @@ import { createFileWatcher } from "./watch";
 const watcher = createFileWatcher([resolveTasksDir(), resolveMilestonesDir()]);
 
 export const apiApp = new Hono();
+
+apiApp.get("/api/project", (c) => {
+  return c.json({ name: path.basename(process.cwd()) });
+});
 
 apiApp.get("/api/tasks", async (c) => {
   const tasks = await listTasks(resolveTasksDir());

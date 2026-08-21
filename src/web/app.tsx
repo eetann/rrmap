@@ -33,6 +33,15 @@ export function App() {
   }, [refresh]);
 
   useEffect(() => {
+    fetch("/api/project")
+      .then((res) => res.json() as Promise<{ name: string }>)
+      .then(({ name }) => {
+        document.title = `${name} | rrmap`;
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     const source = new EventSource("/api/events");
     source.addEventListener("changed", () => refresh());
     return () => source.close();
