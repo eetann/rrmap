@@ -11,11 +11,11 @@
   "author": "eetann",
   "repository": {
     "type": "git",
-    "url": "https://github.com/eetann/rrmap.git"
+    "url": "git+https://github.com/eetann/rrmap.git"
   },
   "type": "module",
   "bin": {
-    "rrmap": "./dist/cli.js"
+    "rrmap": "dist/cli.js"
   },
   "files": ["dist"],
   "scripts": {
