@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { cli } from "gunshi";
+import * as pkg from "../package.json";
 import { createCommand } from "./commands/create";
 import { editCommand } from "./commands/edit";
 import { formatCommand } from "./commands/format";
@@ -11,7 +12,7 @@ import { webCommand } from "./commands/web";
 try {
   await cli(process.argv.slice(2), listCommand, {
     name: "rrmap",
-    version: "0.0.1",
+    version: pkg.version,
     description: "雑なロードマップをタスク単位で整理するツール",
     renderHeader: null,
     subCommands: {

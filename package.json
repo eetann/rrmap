@@ -1,8 +1,23 @@
 {
   "name": "rrmap",
-  "module": "src/cli.ts",
+  "version": "0.0.1",
+  "description": "雑に書いたロードマップを、AIと一緒に開発を進めながら育てていくためのタスク管理ツール",
+  "keywords": ["cli", "roadmap", "task-management", "markdown", "ai-agent"],
+  "homepage": "https://github.com/eetann/rrmap",
+  "bugs": {
+    "url": "https://github.com/eetann/rrmap/issues"
+  },
+  "license": "MIT",
+  "author": "eetann",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eetann/rrmap.git"
+  },
   "type": "module",
-  "private": true,
+  "bin": {
+    "rrmap": "./dist/cli.js"
+  },
+  "files": ["dist"],
   "scripts": {
     "rrmap": "bun run src/cli.ts",
     "dev": "bun --hot src/web/dev-server.ts",
@@ -20,24 +35,21 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "bun-plugin-tailwind": "^0.1.2",
+    "clsx": "^2.1.1",
     "oxfmt": "^0.63.0",
     "oxlint": "^1.78.0",
-    "tailwindcss": "^4.3.3",
-    "tsdown": "^0.22.14"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "@hono/node-server": "^2.1.1",
-    "clsx": "^2.1.1",
-    "gray-matter": "^4.0.3",
-    "gunshi": "^0.37.1",
-    "hono": "^4.13.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.3.3",
+    "tsdown": "^0.22.14"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.1",
+    "gray-matter": "^4.0.3",
+    "gunshi": "^0.37.1",
+    "hono": "^4.13.2"
   }
 }
