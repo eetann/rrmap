@@ -1,9 +1,20 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { PlusIcon } from "./icons";
 
 export function AddTaskRow({ onAdd }: { onAdd: (title: string) => Promise<void> }) {
   const [value, setValue] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const refocusPendingRef = useRef(false);
+
+  // input要素はsubmitting中disabledになるため、DOMの更新(disabled解除)が
+  // 反映された後のuseEffectでfocusしないと、フォーカスがbodyに抜けてしまう。
+  useEffect(() => {
+    if (!submitting && refocusPendingRef.current) {
+      refocusPendingRef.current = false;
+      inputRef.current?.focus();
+    }
+  }, [submitting]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -16,6 +27,7 @@ export function AddTaskRow({ onAdd }: { onAdd: (title: string) => Promise<void> 
       await onAdd(title);
       setValue("");
     } finally {
+      refocusPendingRef.current = true;
       setSubmitting(false);
     }
   };
@@ -29,6 +41,7 @@ export function AddTaskRow({ onAdd }: { onAdd: (title: string) => Promise<void> 
         <PlusIcon />
       </span>
       <input
+        ref={inputRef}
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
