@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import {
   MILESTONE_STATUS_META,
@@ -326,7 +327,7 @@ export function SidePeek({
               <span className="text-[13.5px] text-muted-foreground">{BODY_PLACEHOLDER}</span>
             ) : (
               <div className="prose prose-sm max-w-none text-[13.5px] leading-relaxed text-foreground prose-headings:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-code:before:content-none prose-code:after:content-none [&>:first-child]:mt-0 [&>:last-child]:mb-0 dark:prose-invert">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{body}</ReactMarkdown>
               </div>
             )}
           </div>
