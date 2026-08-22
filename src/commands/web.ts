@@ -11,12 +11,18 @@ export const webCommand = define({
       short: "p",
       description: "ポート番号を指定する（未指定時は空きポートを自動選択）",
     },
+    open: {
+      type: "boolean",
+      short: "o",
+      description: "起動後にブラウザで自動的に開く（WSLではWindows側のブラウザを開く）",
+    },
   },
   examples: `$ rrmap web
 $ rrmap web --port 4000
+$ rrmap web --open
 
 管理したいプロジェクトのルートで実行する。ブラウザで表示されたURL（未指定時は空きポートを自動選択）
-を開くと、タスク・マイルストーンの一覧・詳細編集ができる。`,
+を開くと、タスク・マイルストーンの一覧・詳細編集ができる。--openを指定すると起動後にブラウザを自動で開く。`,
   run: async (ctx) => {
     const distDir = getWebDistDir();
     if (!existsSync(distDir)) {
@@ -28,6 +34,6 @@ $ rrmap web --port 4000
     }
 
     const { startServer } = await import("../web/server.ts");
-    startServer(ctx.values.port);
+    startServer(ctx.values.port, ctx.values.open);
   },
 });

@@ -2,15 +2,20 @@ import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { getWebDistDir } from "../paths";
 import { apiApp } from "./api";
+import { openBrowser } from "./open-browser";
 
 const distDir = getWebDistDir();
 
 apiApp.use("/*", serveStatic({ root: distDir }));
 
-export function startServer(port?: number) {
+export function startServer(port?: number, open?: boolean) {
   // port未指定時は0を渡し、OSに空きポートを選ばせる
   const server = serve({ fetch: apiApp.fetch, port: port ?? 0 }, (info) => {
-    console.log(`rrmap web UI: http://localhost:${info.port}`);
+    const url = `http://localhost:${info.port}`;
+    console.log(`rrmap web UI: ${url}`);
+    if (open) {
+      openBrowser(url);
+    }
   });
 
   server.on("error", (error: NodeJS.ErrnoException) => {
