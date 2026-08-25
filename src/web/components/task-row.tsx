@@ -3,7 +3,15 @@ import type { Task } from "../../task";
 import { CopyIdButton } from "./copy-id-button";
 import { CheckIcon } from "./icons";
 
-export function TaskRow({ task, onClick }: { task: Task; onClick: () => void }) {
+export function TaskRow({
+  task,
+  onClick,
+  milestoneLabel,
+}: {
+  task: Task;
+  onClick: () => void;
+  milestoneLabel?: string;
+}) {
   const meta = TASK_STATUS_META[task.status];
 
   return (
@@ -41,7 +49,12 @@ export function TaskRow({ task, onClick }: { task: Task; onClick: () => void }) 
       >
         {task.title}
       </div>
-      <div className="flex flex-shrink-0 items-center gap-1">
+      <div className="flex flex-shrink-0 items-center gap-2">
+        {milestoneLabel !== undefined && (
+          <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+            {milestoneLabel}
+          </span>
+        )}
         <span className="text-xs text-muted-foreground tabular-nums">{task.id}</span>
         <CopyIdButton id={task.id} />
       </div>

@@ -43,15 +43,21 @@ function MilestoneList({
   );
 }
 
+export type TaskView = "all" | "milestones";
+
 export function Sidebar({
   visibleMilestones,
   hiddenMilestones,
   tasks,
+  view,
+  onChangeView,
   onOpenMilestone,
 }: {
   visibleMilestones: Milestone[];
   hiddenMilestones: Milestone[];
   tasks: Task[];
+  view: TaskView;
+  onChangeView: (view: TaskView) => void;
   onOpenMilestone: (id: string) => void;
 }) {
   return (
@@ -60,14 +66,30 @@ export function Sidebar({
       <div className="mt-1 text-[11px] text-muted-foreground">AIと進めるロードマップ</div>
 
       <div className="mt-7 flex flex-col gap-0.5">
-        <div className="flex items-center gap-2.5 rounded-lg bg-accent px-2.5 py-2 text-[13.5px] font-semibold text-accent-foreground">
+        <button
+          type="button"
+          onClick={() => onChangeView("all")}
+          className={
+            view === "all"
+              ? "flex items-center gap-2.5 rounded-lg bg-accent px-2.5 py-2 text-[13.5px] font-semibold text-accent-foreground"
+              : "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] text-muted-foreground hover:bg-background"
+          }
+        >
           <ListIcon />
           すべてのタスク
-        </div>
-        <div className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] text-muted-foreground">
+        </button>
+        <button
+          type="button"
+          onClick={() => onChangeView("milestones")}
+          className={
+            view === "milestones"
+              ? "flex items-center gap-2.5 rounded-lg bg-accent px-2.5 py-2 text-[13.5px] font-semibold text-accent-foreground"
+              : "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] text-muted-foreground hover:bg-background"
+          }
+        >
           <FlagIcon />
           マイルストーン
-        </div>
+        </button>
       </div>
 
       <div className="mt-6.5 mb-2.5 ml-2.5 text-[11px] tracking-wide text-muted-foreground uppercase">

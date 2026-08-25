@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Milestone } from "../milestone";
 import type { Task } from "../task";
+import { AllTasksList } from "./components/all-tasks-list";
 import { SearchIcon } from "./components/icons";
 import { MilestoneSection } from "./components/milestone-section";
-import { Sidebar } from "./components/sidebar";
+import { Sidebar, type TaskView } from "./components/sidebar";
 import { SidePeek, type SidePeekTarget } from "./components/side-peek";
 
 type OpenPanel = { type: "task"; id: string } | { type: "milestone"; id: string } | null;
@@ -14,6 +15,7 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
   const [query, setQuery] = useState("");
+  const [view, setView] = useState<TaskView>("all");
   const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const refresh = useCallback(() => {
@@ -156,11 +158,15 @@ export function App() {
         visibleMilestones={visibleMilestones}
         hiddenMilestones={hiddenMilestones}
         tasks={tasks}
+        view={view}
+        onChangeView={setView}
         onOpenMilestone={(id) => setOpenPanel({ type: "milestone", id })}
       />
       <div className="min-w-0 flex-1 px-14 py-11 pb-16">
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-[23px] font-bold">タスク</h1>
+          <h1 className="text-[23px] font-bold">
+            {view === "all" ? "すべてのタスク" : "マイルストーン"}
+          </h1>
           <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-muted-foreground">
             <SearchIcon />
             <input
@@ -173,24 +179,34 @@ export function App() {
           </div>
         </div>
 
-        {visibleMilestones.map((milestone) => (
-          <MilestoneSection
-            key={milestone.id}
-            milestone={milestone}
-            tasks={filteredTasks.filter((t) => t.milestone === milestone.id)}
+        {view === "all" ? (
+          <AllTasksList
+            tasks={filteredTasks}
+            milestones={milestones}
             onOpenTask={(id) => setOpenPanel({ type: "task", id })}
-            onOpenMilestone={(id) => setOpenPanel({ type: "milestone", id })}
-            onAddTask={(title) => addTask(milestone.id, title)}
           />
-        ))}
+        ) : (
+          <>
+            {visibleMilestones.map((milestone) => (
+              <MilestoneSection
+                key={milestone.id}
+                milestone={milestone}
+                tasks={filteredTasks.filter((t) => t.milestone === milestone.id)}
+                onOpenTask={(id) => setOpenPanel({ type: "task", id })}
+                onOpenMilestone={(id) => setOpenPanel({ type: "milestone", id })}
+                onAddTask={(title) => addTask(milestone.id, title)}
+              />
+            ))}
 
-        <MilestoneSection
-          milestone={null}
-          tasks={unassignedTasks}
-          onOpenTask={(id) => setOpenPanel({ type: "task", id })}
-          onOpenMilestone={() => {}}
-          onAddTask={(title) => addTask(null, title)}
-        />
+            <MilestoneSection
+              milestone={null}
+              tasks={unassignedTasks}
+              onOpenTask={(id) => setOpenPanel({ type: "task", id })}
+              onOpenMilestone={() => {}}
+              onAddTask={(title) => addTask(null, title)}
+            />
+          </>
+        )}
       </div>
 
       {target && (
