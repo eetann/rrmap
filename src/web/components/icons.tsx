@@ -68,7 +68,7 @@ export function CheckIcon({ className, size = 11 }: IconProps) {
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="white"
+      stroke="currentColor"
       strokeWidth={3.5}
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -172,6 +172,24 @@ export function TrashIcon({ className, size = 14 }: IconProps) {
       <path d="M10 11v6" />
       <path d="M14 11v6" />
       <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    </svg>
+  );
+}
+
+export function ChevronDownIcon({ className, size = 13 }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   );
 }

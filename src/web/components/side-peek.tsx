@@ -10,10 +10,13 @@ import {
 } from "@/lib/status";
 import type { Milestone, MilestoneStatus } from "../../milestone";
 import type { Task, TaskStatus } from "../../task";
+import { Combobox, type ComboboxOption } from "./combobox";
 import { CopyIdButton } from "./copy-id-button";
 import { TrashIcon, XIcon } from "./icons";
 
 const BODY_PLACEHOLDER = "メモを書く（方針・意思決定など）";
+// マイルストーン未設定(null)をComboboxの値として扱うための番兵。IDは MS-xxxx 形式なので衝突しない
+const NO_MILESTONE = "__none__";
 
 export type SidePeekTarget =
   | { type: "task"; task: Task }
@@ -75,7 +78,8 @@ export function SidePeek({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      // ドロップダウンを開いている間のEscapeは、ドロップダウン側が握り潰すのでここでは閉じない
+      if (e.key === "Escape" && !e.defaultPrevented) {
         onClose();
       }
     };
@@ -90,6 +94,21 @@ export function SidePeek({
     target.type === "task"
       ? TASK_STATUS_META[target.task.status]
       : MILESTONE_STATUS_META[target.milestone.status];
+
+  const statusOptions: ComboboxOption[] =
+    target.type === "task"
+      ? TASK_STATUS_OPTIONS.map((status) => ({
+          value: status,
+          label: TASK_STATUS_META[status].label,
+        }))
+      : MILESTONE_STATUS_OPTIONS.map((status) => ({
+          value: status,
+          label: MILESTONE_STATUS_META[status].label,
+        }));
+  const milestoneOptions: ComboboxOption[] = [
+    { value: NO_MILESTONE, label: "未分類" },
+    ...milestones.map((m) => ({ value: m.id, label: m.title })),
+  ];
 
   const [titleValue, setTitleValue] = useState(title);
   const [bodyValue, setBodyValue] = useState(body);
@@ -221,29 +240,17 @@ export function SidePeek({
 
         <div className="flex items-center gap-3 text-[13px]">
           <span className="w-[88px] flex-shrink-0 text-muted-foreground">ステータス</span>
-          <div
-            className="inline-flex w-fit items-center rounded-full pl-3"
+          <Combobox
+            value={target.type === "task" ? target.task.status : target.milestone.status}
+            options={statusOptions}
+            onChange={handleStatusChange}
+            // 選択肢が少なく一覧で足りるので検索欄は出さない
+            searchable={false}
+            ariaLabel="ステータス"
+            className="w-fit rounded-full py-1.5 pr-3 pl-3 text-[12.5px] font-semibold"
             style={{ background: statusMeta.bg, color: statusMeta.fg }}
-          >
-            <select
-              value={target.type === "task" ? target.task.status : target.milestone.status}
-              onChange={(e) => handleStatusChange(e.target.value)}
-              className="cursor-pointer appearance-none bg-transparent py-1.5 pr-5 text-[12.5px] font-semibold outline-none"
-              style={{ color: "inherit" }}
-            >
-              {target.type === "task"
-                ? TASK_STATUS_OPTIONS.map((status) => (
-                    <option key={status} value={status}>
-                      {TASK_STATUS_META[status].label}
-                    </option>
-                  ))
-                : MILESTONE_STATUS_OPTIONS.map((status) => (
-                    <option key={status} value={status}>
-                      {MILESTONE_STATUS_META[status].label}
-                    </option>
-                  ))}
-            </select>
-          </div>
+            contentClassName="w-[170px] min-w-0"
+          />
         </div>
 
         {target.type === "milestone" && (
@@ -266,22 +273,20 @@ export function SidePeek({
         {target.type === "task" && (
           <div className="flex items-center gap-3 text-[13px]">
             <span className="w-[88px] flex-shrink-0 text-muted-foreground">マイルストーン</span>
-            <select
-              value={target.task.milestone ?? ""}
-              onChange={(e) =>
+            <Combobox
+              value={target.task.milestone ?? NO_MILESTONE}
+              options={milestoneOptions}
+              onChange={(value) =>
                 onTaskChange(target.task.id, {
-                  milestone: e.target.value === "" ? null : e.target.value,
+                  milestone: value === NO_MILESTONE ? null : value,
                 })
               }
-              className="flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-[13px] text-foreground"
-            >
-              <option value="">未分類</option>
-              {milestones.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.title}
-                </option>
-              ))}
-            </select>
+              ariaLabel="マイルストーン"
+              placeholder="未分類"
+              searchPlaceholder="マイルストーンを検索"
+              emptyText="マイルストーンが見つかりません"
+              className="min-w-0 flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-left text-[13px] text-foreground"
+            />
           </div>
         )}
 

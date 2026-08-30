@@ -33,7 +33,7 @@ export function TaskRow({
             className="flex h-[18px] w-[18px] items-center justify-center rounded-full"
             style={{ background: "var(--status-done)" }}
           >
-            <CheckIcon />
+            <CheckIcon className="text-white" />
           </span>
         ) : (
           <span className="block h-[9px] w-[9px] rounded-full" style={{ background: meta.dot }} />
