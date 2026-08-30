@@ -313,7 +313,7 @@ export function SidePeek({
               commitBody(e.currentTarget.value, false);
             }}
             placeholder={BODY_PLACEHOLDER}
-            className="min-h-[170px] w-full flex-1 resize-y border-none bg-transparent text-[13.5px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
+            className="min-h-[170px] w-full flex-1 resize-y border-none bg-transparent text-[13.5px] font-mono leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
           />
         ) : (
           <div
@@ -329,9 +329,11 @@ export function SidePeek({
             className="min-h-[170px] w-full flex-1 cursor-text rounded-md"
           >
             {body.trim() === "" ? (
-              <span className="text-[13.5px] text-muted-foreground">{BODY_PLACEHOLDER}</span>
+              <span className="text-[13.5px] font-mono text-muted-foreground">
+                {BODY_PLACEHOLDER}
+              </span>
             ) : (
-              <div className="prose prose-sm max-w-none text-[13.5px] leading-relaxed text-foreground prose-headings:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-code:before:content-none prose-code:after:content-none [&>:first-child]:mt-0 [&>:last-child]:mb-0 dark:prose-invert">
+              <div className="prose prose-sm max-w-none text-[13.5px] font-mono leading-relaxed text-foreground prose-headings:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-code:before:content-none prose-code:after:content-none [&>:first-child]:mt-0 [&>:last-child]:mb-0 dark:prose-invert">
                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{body}</ReactMarkdown>
               </div>
             )}
