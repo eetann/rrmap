@@ -2,6 +2,7 @@ import { MILESTONE_STATUS_META } from "@/lib/status";
 import type { Milestone } from "../../milestone";
 import type { Task } from "../../task";
 import { AddTaskRow } from "./add-task-row";
+import { CopyIdButton } from "./copy-id-button";
 import { TaskRow } from "./task-row";
 
 export function MilestoneSection({
@@ -26,7 +27,13 @@ export function MilestoneSection({
       <div className="mb-2 flex items-baseline justify-between">
         <div className="flex items-center gap-2.5">
           {milestone ? (
-            <span className="text-base font-semibold">{milestone.title}</span>
+            <button
+              type="button"
+              onClick={() => onOpenMilestone(milestone.id)}
+              className="-mx-1.5 cursor-pointer rounded-md px-1.5 py-0.5 text-left text-base font-semibold hover:bg-muted"
+            >
+              {milestone.title}
+            </button>
           ) : (
             <span className="text-base font-medium text-muted-foreground">未分類</span>
           )}
@@ -38,20 +45,17 @@ export function MilestoneSection({
               {meta.label}
             </span>
           )}
-          {milestone && (
-            <button
-              type="button"
-              onClick={() => onOpenMilestone(milestone.id)}
-              className="rounded-md border border-border px-2.5 py-0.5 text-[11.5px] text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              編集
-            </button>
-          )}
         </div>
         {milestone && (
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {doneCount} / {tasks.length} 完了
-          </span>
+          <div className="flex flex-shrink-0 items-center gap-3">
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {doneCount} / {tasks.length} 完了
+            </span>
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-muted-foreground tabular-nums">{milestone.id}</span>
+              <CopyIdButton id={milestone.id} />
+            </div>
+          </div>
         )}
       </div>
       {milestone && (
