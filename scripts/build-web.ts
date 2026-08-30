@@ -8,6 +8,8 @@ const result = await Bun.build({
   entrypoints: [path.join(rrmapRoot, "src", "web", "index.html")],
   outdir,
   minify: true,
+  // SPAで /tasks/TASK-0001 のような深いパスから開いても資産を解決できるよう絶対パスにする
+  publicPath: "/",
   plugins: [tailwind],
 });
 

@@ -1,21 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { type TaskView, useRoute } from "@/lib/route";
 import type { Milestone } from "../milestone";
 import type { Task } from "../task";
 import { AllTasksList } from "./components/all-tasks-list";
 import { SearchIcon } from "./components/icons";
 import { MilestoneSection } from "./components/milestone-section";
-import { Sidebar, type TaskView } from "./components/sidebar";
+import { Sidebar } from "./components/sidebar";
 import { SidePeek, type SidePeekTarget } from "./components/side-peek";
-
-type OpenPanel = { type: "task"; id: string } | { type: "milestone"; id: string } | null;
 
 export function App() {
   const [tasks, setTasks] = useState<Task[] | null>(null);
   const [milestones, setMilestones] = useState<Milestone[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
   const [query, setQuery] = useState("");
-  const [view, setView] = useState<TaskView>("all");
+  const { route, navigate } = useRoute();
   const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const refresh = useCallback(() => {
@@ -48,6 +46,26 @@ export function App() {
     source.addEventListener("changed", () => refresh());
     return () => source.close();
   }, [refresh]);
+
+  const changeView = useCallback(
+    (view: TaskView) => navigate({ view, panel: route.panel }),
+    [navigate, route.panel],
+  );
+
+  const openTask = useCallback(
+    (id: string) => navigate({ view: route.view, panel: { type: "task", id } }),
+    [navigate, route.view],
+  );
+
+  const openMilestone = useCallback(
+    (id: string) => navigate({ view: route.view, panel: { type: "milestone", id } }),
+    [navigate, route.view],
+  );
+
+  const closePanel = useCallback(
+    () => navigate({ view: route.view, panel: null }),
+    [navigate, route.view],
+  );
 
   const schedulePatch = useCallback(
     (url: string, key: string, body: Record<string, unknown>, debounce: boolean) => {
@@ -112,14 +130,20 @@ export function App() {
     setTasks((prev) => (prev ? [...prev, created] : prev));
   }, []);
 
-  const deleteTask = useCallback(async (id: string) => {
-    const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
-    if (!res.ok) {
-      return;
-    }
-    setTasks((prev) => prev?.filter((t) => t.id !== id) ?? prev);
-    setOpenPanel((prev) => (prev?.type === "task" && prev.id === id ? null : prev));
-  }, []);
+  const deleteTask = useCallback(
+    async (id: string) => {
+      const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        return;
+      }
+      setTasks((prev) => prev?.filter((t) => t.id !== id) ?? prev);
+      if (route.panel?.type === "task" && route.panel.id === id) {
+        // 削除済みタスクのURLへ「戻る」で行けてしまわないよう履歴を置き換える
+        navigate({ view: route.view, panel: null }, { replace: true });
+      }
+    },
+    [navigate, route],
+  );
 
   if (error) {
     return <div className="p-6 text-destructive">読み込みに失敗しました: {error}</div>;
@@ -138,11 +162,11 @@ export function App() {
   const hiddenMilestones = milestones.filter((m) => m.hidden);
 
   let target: SidePeekTarget | null = null;
-  if (openPanel?.type === "task") {
-    const task = tasks.find((t) => t.id === openPanel.id);
+  if (route.panel?.type === "task") {
+    const task = tasks.find((t) => t.id === route.panel?.id);
     target = task ? { type: "task", task } : null;
-  } else if (openPanel?.type === "milestone") {
-    const milestone = milestones.find((m) => m.id === openPanel.id);
+  } else if (route.panel?.type === "milestone") {
+    const milestone = milestones.find((m) => m.id === route.panel?.id);
     target = milestone
       ? {
           type: "milestone",
@@ -158,14 +182,14 @@ export function App() {
         visibleMilestones={visibleMilestones}
         hiddenMilestones={hiddenMilestones}
         tasks={tasks}
-        view={view}
-        onChangeView={setView}
-        onOpenMilestone={(id) => setOpenPanel({ type: "milestone", id })}
+        view={route.view}
+        onChangeView={changeView}
+        onOpenMilestone={openMilestone}
       />
       <div className="min-w-0 flex-1 px-14 py-11 pb-16">
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-[23px] font-bold">
-            {view === "all" ? "すべてのタスク" : "マイルストーン"}
+            {route.view === "all" ? "すべてのタスク" : "マイルストーン"}
           </h1>
           <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-muted-foreground">
             <SearchIcon />
@@ -179,12 +203,8 @@ export function App() {
           </div>
         </div>
 
-        {view === "all" ? (
-          <AllTasksList
-            tasks={filteredTasks}
-            milestones={milestones}
-            onOpenTask={(id) => setOpenPanel({ type: "task", id })}
-          />
+        {route.view === "all" ? (
+          <AllTasksList tasks={filteredTasks} milestones={milestones} onOpenTask={openTask} />
         ) : (
           <>
             {visibleMilestones.map((milestone) => (
@@ -192,8 +212,8 @@ export function App() {
                 key={milestone.id}
                 milestone={milestone}
                 tasks={filteredTasks.filter((t) => t.milestone === milestone.id)}
-                onOpenTask={(id) => setOpenPanel({ type: "task", id })}
-                onOpenMilestone={(id) => setOpenPanel({ type: "milestone", id })}
+                onOpenTask={openTask}
+                onOpenMilestone={openMilestone}
                 onAddTask={(title) => addTask(milestone.id, title)}
               />
             ))}
@@ -201,7 +221,7 @@ export function App() {
             <MilestoneSection
               milestone={null}
               tasks={unassignedTasks}
-              onOpenTask={(id) => setOpenPanel({ type: "task", id })}
+              onOpenTask={openTask}
               onOpenMilestone={() => {}}
               onAddTask={(title) => addTask(null, title)}
             />
@@ -213,11 +233,11 @@ export function App() {
         <SidePeek
           target={target}
           milestones={milestones}
-          onClose={() => setOpenPanel(null)}
+          onClose={closePanel}
           onTaskChange={updateTask}
           onTaskDelete={deleteTask}
           onMilestoneChange={updateMilestone}
-          onOpenTask={(id) => setOpenPanel({ type: "task", id })}
+          onOpenTask={openTask}
         />
       )}
     </div>

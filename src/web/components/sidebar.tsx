@@ -1,3 +1,4 @@
+import type { TaskView } from "@/lib/route";
 import type { Milestone } from "../../milestone";
 import type { Task } from "../../task";
 import { FlagIcon, ListIcon } from "./icons";
@@ -42,8 +43,6 @@ function MilestoneList({
     </div>
   );
 }
-
-export type TaskView = "all" | "milestones";
 
 export function Sidebar({
   visibleMilestones,
