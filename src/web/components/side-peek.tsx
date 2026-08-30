@@ -137,7 +137,13 @@ export function SidePeek({
     el.style.height = `${el.scrollHeight}px`;
   }, [titleValue]);
 
+  // 値が変わっていないのにPATCHを投げると、中身が同じでもファイルが書き直され、
+  // frontmatterの正規化（hidden: false の追記など）で余計な差分が出てしまう。
+  // ピークを開くとタイトルにフォーカスが当たるので、開いて閉じただけでもblurが走る
   const commitTitle = (value: string, debounce: boolean) => {
+    if (value === title) {
+      return;
+    }
     if (target.type === "task") {
       onTaskChange(target.task.id, { title: value }, debounce);
     } else {
@@ -146,6 +152,9 @@ export function SidePeek({
   };
 
   const commitBody = (value: string, debounce: boolean) => {
+    if (value === body) {
+      return;
+    }
     if (target.type === "task") {
       onTaskChange(target.task.id, { body: value }, debounce);
     } else {
@@ -165,8 +174,14 @@ export function SidePeek({
 
   const handleStatusChange = (value: string) => {
     if (target.type === "task") {
+      if (value === target.task.status) {
+        return;
+      }
       onTaskChange(target.task.id, { status: value as TaskStatus });
     } else {
+      if (value === target.milestone.status) {
+        return;
+      }
       onMilestoneChange(target.milestone.id, { status: value as MilestoneStatus });
     }
   };
@@ -276,11 +291,13 @@ export function SidePeek({
             <Combobox
               value={target.task.milestone ?? NO_MILESTONE}
               options={milestoneOptions}
-              onChange={(value) =>
-                onTaskChange(target.task.id, {
-                  milestone: value === NO_MILESTONE ? null : value,
-                })
-              }
+              onChange={(value) => {
+                const milestone = value === NO_MILESTONE ? null : value;
+                if (milestone === target.task.milestone) {
+                  return;
+                }
+                onTaskChange(target.task.id, { milestone });
+              }}
               ariaLabel="マイルストーン"
               placeholder="未分類"
               searchPlaceholder="マイルストーンを検索"
