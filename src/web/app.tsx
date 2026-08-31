@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type TaskView, useRoute } from "@/lib/route";
-import type { Milestone } from "../milestone";
+import { ARCHIVE_MILESTONE_ID, type Milestone } from "../milestone";
 import type { Task } from "../task";
 import { AllTasksList } from "./components/all-tasks-list";
 import { SearchIcon } from "./components/icons";
@@ -104,6 +104,17 @@ export function App() {
     [schedulePatch],
   );
 
+  const archiveTasks = useCallback(
+    (ids: string[]) => {
+      for (const id of ids) {
+        updateTask(id, { milestone: ARCHIVE_MILESTONE_ID });
+      }
+    },
+    [updateTask],
+  );
+
+  const archiveTask = useCallback((id: string) => archiveTasks([id]), [archiveTasks]);
+
   const updateMilestone = useCallback(
     (
       id: string,
@@ -159,7 +170,12 @@ export function App() {
       : tasks.filter((t) => t.title.toLowerCase().includes(normalizedQuery));
   const unassignedTasks = filteredTasks.filter((t) => t.milestone === null);
   const visibleMilestones = milestones.filter((m) => !m.hidden);
-  const hiddenMilestones = milestones.filter((m) => m.hidden);
+  // 空のアーカイブはサイドバーに出さない（マイルストーンの選択肢としては常に出す）
+  const hiddenMilestones = milestones.filter(
+    (m) =>
+      m.hidden &&
+      (m.id !== ARCHIVE_MILESTONE_ID || tasks.some((t) => t.milestone === ARCHIVE_MILESTONE_ID)),
+  );
 
   let target: SidePeekTarget | null = null;
   if (route.panel?.type === "task") {
@@ -224,6 +240,7 @@ export function App() {
               onOpenTask={openTask}
               onOpenMilestone={() => {}}
               onAddTask={(title) => addTask(null, title)}
+              onArchiveTasks={archiveTasks}
             />
           </>
         )}
@@ -235,6 +252,7 @@ export function App() {
           milestones={milestones}
           onClose={closePanel}
           onTaskChange={updateTask}
+          onTaskArchive={archiveTask}
           onTaskDelete={deleteTask}
           onMilestoneChange={updateMilestone}
           onOpenTask={openTask}

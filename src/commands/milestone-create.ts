@@ -1,5 +1,5 @@
 import { define } from "gunshi";
-import { milestoneIdFromNumber, milestoneIdNumber } from "../milestone";
+import { isArchiveMilestoneId, milestoneIdFromNumber, milestoneIdNumber } from "../milestone";
 import { listMilestones, resolveMilestonesDir, writeMilestone } from "../milestone-store";
 
 export const milestoneCreateCommand = define({
@@ -19,8 +19,13 @@ export const milestoneCreateCommand = define({
     const milestonesDir = resolveMilestonesDir();
     const milestones = await listMilestones(milestonesDir);
 
+    // 組み込みマイルストーンはNNNN形式のidを持たないので採番対象から外す
     const nextNumber =
-      milestones.reduce((max, milestone) => Math.max(max, milestoneIdNumber(milestone.id)), 0) + 1;
+      milestones.reduce(
+        (max, milestone) =>
+          isArchiveMilestoneId(milestone.id) ? max : Math.max(max, milestoneIdNumber(milestone.id)),
+        0,
+      ) + 1;
     const id = milestoneIdFromNumber(nextNumber);
 
     await writeMilestone(milestonesDir, {

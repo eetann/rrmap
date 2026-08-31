@@ -1,5 +1,5 @@
 import { define } from "gunshi";
-import { MILESTONE_STATUSES } from "../milestone";
+import { isArchiveMilestoneId, MILESTONE_STATUSES } from "../milestone";
 import { readMilestone, resolveMilestonesDir, writeMilestone } from "../milestone-store";
 import { parseMilestoneId } from "./milestone-id";
 
@@ -33,6 +33,9 @@ $ rrmap milestone edit MILESTONE-0001 --no-hidden
   },
   run: async (ctx) => {
     const id = parseMilestoneId(ctx.values.id);
+    if (isArchiveMilestoneId(id)) {
+      throw new Error(`${id} is a built-in milestone and cannot be edited`);
+    }
     const milestonesDir = resolveMilestonesDir();
     const milestone = await readMilestone(milestonesDir, id);
 

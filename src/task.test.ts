@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { ARCHIVE_MILESTONE_ID } from "./milestone";
 import { parseTask, stringifyTask, type Task } from "./task";
 
 describe("parseTask", () => {
@@ -51,6 +52,18 @@ status: draft
 ---
 `;
     expect(parseTask(raw).milestone).toBeNull();
+  });
+
+  test("accepts the built-in archive milestone id", () => {
+    const raw = `---
+id: TASK-0001
+title: サンプル
+status: done
+parent: null
+milestone: ${ARCHIVE_MILESTONE_ID}
+---
+`;
+    expect(parseTask(raw).milestone).toBe(ARCHIVE_MILESTONE_ID);
   });
 
   test("throws when milestone is not a valid milestone id or null", () => {

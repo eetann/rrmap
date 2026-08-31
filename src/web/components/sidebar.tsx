@@ -1,5 +1,5 @@
 import type { TaskView } from "@/lib/route";
-import type { Milestone } from "../../milestone";
+import { isArchiveMilestoneId, type Milestone } from "../../milestone";
 import type { Task } from "../../task";
 import { FlagIcon, ListIcon } from "./icons";
 
@@ -27,8 +27,9 @@ function MilestoneList({
             <span
               className="block h-1.5 w-1.5 flex-shrink-0 rounded-full"
               style={{
+                // アーカイブは中身が完了とは限らないので、完了色にはしない
                 background:
-                  milestone.status === "completed"
+                  milestone.status === "completed" && !isArchiveMilestoneId(milestone.id)
                     ? "var(--status-done)"
                     : "var(--muted-foreground)",
               }}

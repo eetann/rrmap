@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
+  ARCHIVE_MILESTONE_ID,
+  createArchiveMilestone,
   isMilestoneId,
   type Milestone,
   milestoneIdFromNumber,
@@ -65,6 +67,16 @@ status: planned
     expect(() => parseMilestone(raw)).toThrow(/"title"/);
   });
 
+  test("throws when id is the built-in archive milestone id", () => {
+    const raw = `---
+id: ${ARCHIVE_MILESTONE_ID}
+title: アーカイブ
+status: completed
+---
+`;
+    expect(() => parseMilestone(raw)).toThrow(/built-in/);
+  });
+
   test("throws when status is invalid", () => {
     const raw = `---
 id: MILESTONE-0001
@@ -94,10 +106,22 @@ describe("isMilestoneId", () => {
     expect(isMilestoneId("MILESTONE-0001")).toBe(true);
   });
 
+  test("accepts the built-in archive milestone id", () => {
+    expect(isMilestoneId(ARCHIVE_MILESTONE_ID)).toBe(true);
+  });
+
   test("rejects a non-milestone id", () => {
     expect(isMilestoneId("1")).toBe(false);
     expect(isMilestoneId("MILESTONE-1")).toBe(false);
     expect(isMilestoneId(null)).toBe(false);
+  });
+});
+
+describe("createArchiveMilestone", () => {
+  test("is hidden so that it stays out of the task list", () => {
+    const archive = createArchiveMilestone();
+    expect(archive.id).toBe(ARCHIVE_MILESTONE_ID);
+    expect(archive.hidden).toBe(true);
   });
 });
 

@@ -94,6 +94,26 @@ rrmap web
 
 タスクやマイルストーンを開くとURLが`/tasks/TASK-0001`のように変わります。よく見るタスクはブックマークしておけます。
 
+## 片付いたタスクをアーカイブする
+
+完了したタスクが溜まってくると一覧が読みづらくなります。rrmapには`MILESTONE-ARCHIVED`という組み込みのマイルストーンが最初から用意されているので、片付けたいタスクはここへ移してください。マイルストーンのファイルを自分で作る必要はありません。
+
+```bash
+rrmap edit TASK-0001 TASK-0007 TASK-0012 --milestone MILESTONE-ARCHIVED
+rrmap edit TASK-0001 --milestone none   # 未分類に戻す
+```
+
+Web UIからは、未分類セクションの「完了・中止 N 件をアーカイブ」でまとめて移せます。タスクを開いたときの右上のボタンからは1件ずつ移せます。
+
+アーカイブしたタスクはマイルストーンの一覧からは外れますが、サイドバーの「非表示のマイルストーン」から中身を確認でき、そこから別のマイルストーンへ移し直すこともできます。`rrmap list`は今までどおり全部表示するので、CLIから見えなくなることはありません。
+
+自分で作ったマイルストーンも、同じように一覧から外せます。
+
+```bash
+rrmap milestone edit MILESTONE-0001 --hidden      # 一覧から外す
+rrmap milestone edit MILESTONE-0001 --no-hidden   # 戻す
+```
+
 ## ステータス
 
 タスク:
@@ -116,12 +136,12 @@ rrmap web
 rrmap list [--status <status>] [--parent <id>] [--milestone <id>]   # タスク一覧
 rrmap show <id>                                                     # タスクの詳細（本文込み）
 rrmap create <title> [--parent <id>] [--milestone <id>]             # タスク作成（IDは自動採番）
-rrmap edit <id> [--status <status>] [--title <title>]               # status/titleを変更
+rrmap edit <id>... [--status <status>] [--title <title>] [--milestone <id|none>]  # idは複数指定可
 
 rrmap milestone list [--status <status>]     # マイルストーン一覧
 rrmap milestone show <id>                    # マイルストーンの詳細（本文込み）
 rrmap milestone create <title>               # マイルストーン作成（IDは自動採番）
-rrmap milestone edit <id> [--status <status>] [--title <title>]
+rrmap milestone edit <id> [--status <status>] [--title <title>] [--hidden|--no-hidden]
 
 rrmap format   # タスク・マイルストーンのMarkdownフォーマットを表示
 rrmap web      # Web UIを起動

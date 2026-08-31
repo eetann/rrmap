@@ -1,6 +1,14 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { type Milestone, milestoneFileName, parseMilestone, stringifyMilestone } from "./milestone";
+import {
+  ARCHIVE_MILESTONE_ID,
+  createArchiveMilestone,
+  isArchiveMilestoneId,
+  type Milestone,
+  milestoneFileName,
+  parseMilestone,
+  stringifyMilestone,
+} from "./milestone";
 
 export function resolveMilestonesDir(baseDir: string = process.cwd()): string {
   return join(baseDir, ".rrmap", "milestones");
@@ -27,10 +35,16 @@ export async function listMilestones(milestonesDir: string): Promise<Milestone[]
       return parseMilestone(raw);
     }),
   );
-  return milestones.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  milestones.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  // 組み込みのアーカイブはファイルを持たないので、採番順には並べず常に末尾に置く
+  return [...milestones, createArchiveMilestone()];
 }
 
 export async function readMilestone(milestonesDir: string, id: string): Promise<Milestone> {
+  if (isArchiveMilestoneId(id)) {
+    return createArchiveMilestone();
+  }
+
   const filePath = join(milestonesDir, milestoneFileName(id));
   let raw: string;
   try {
@@ -45,6 +59,10 @@ export async function readMilestone(milestonesDir: string, id: string): Promise<
 }
 
 export async function writeMilestone(milestonesDir: string, milestone: Milestone): Promise<void> {
+  if (isArchiveMilestoneId(milestone.id)) {
+    throw new Error(`${ARCHIVE_MILESTONE_ID} is a built-in milestone and cannot be edited`);
+  }
+
   await mkdir(milestonesDir, { recursive: true });
   const filePath = join(milestonesDir, milestoneFileName(milestone.id));
   await writeFile(filePath, stringifyMilestone(milestone), "utf8");

@@ -1,5 +1,5 @@
 import { define } from "gunshi";
-import { MILESTONE_STATUSES } from "../milestone";
+import { isArchiveMilestoneId, MILESTONE_STATUSES } from "../milestone";
 import { listMilestones, resolveMilestonesDir } from "../milestone-store";
 
 export const milestoneListCommand = define({
@@ -27,7 +27,10 @@ export const milestoneListCommand = define({
 
     for (const milestone of milestones) {
       const hiddenLabel = milestone.hidden ? "\t[hidden]" : "";
-      console.log(`${milestone.id}\t[${milestone.status}]\t${milestone.title}${hiddenLabel}`);
+      const builtinLabel = isArchiveMilestoneId(milestone.id) ? "\t[builtin]" : "";
+      console.log(
+        `${milestone.id}\t[${milestone.status}]\t${milestone.title}${hiddenLabel}${builtinLabel}`,
+      );
     }
   },
 });

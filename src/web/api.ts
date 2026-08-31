@@ -1,7 +1,7 @@
 import path from "node:path";
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
-import { isMilestoneId, isMilestoneStatus } from "../milestone";
+import { isArchiveMilestoneId, isMilestoneId, isMilestoneStatus } from "../milestone";
 import {
   listMilestones,
   readMilestone,
@@ -135,6 +135,9 @@ apiApp.patch("/api/milestones/:id", async (c) => {
   const id = c.req.param("id");
   if (!isMilestoneId(id)) {
     return c.json({ error: "invalid milestone id" }, 400);
+  }
+  if (isArchiveMilestoneId(id)) {
+    return c.json({ error: "built-in milestone cannot be edited" }, 400);
   }
 
   const milestonesDir = resolveMilestonesDir();

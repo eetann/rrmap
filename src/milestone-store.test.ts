@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { ARCHIVE_MILESTONE_ID, createArchiveMilestone } from "./milestone";
 import {
   listMilestones,
   readMilestone,
@@ -26,8 +27,9 @@ describe("milestone-store", () => {
     expect(resolveMilestonesDir("/foo/bar")).toBe(join("/foo/bar", ".rrmap", "milestones"));
   });
 
-  test("listMilestones returns [] when the directory doesn't exist", async () => {
-    expect(await listMilestones(milestonesDir)).toEqual([]);
+  test("listMilestones returns only the built-in archive when the directory doesn't exist", async () => {
+    const milestones = await listMilestones(milestonesDir);
+    expect(milestones.map((milestone) => milestone.id)).toEqual([ARCHIVE_MILESTONE_ID]);
   });
 
   test("writeMilestone then readMilestone round-trips", async () => {
@@ -47,13 +49,25 @@ describe("milestone-store", () => {
     });
   });
 
+  test("readMilestone returns the built-in archive without reading a file", async () => {
+    expect(await readMilestone(milestonesDir, ARCHIVE_MILESTONE_ID)).toEqual(
+      createArchiveMilestone(),
+    );
+  });
+
+  test("writeMilestone rejects the built-in archive", async () => {
+    await expect(writeMilestone(milestonesDir, createArchiveMilestone())).rejects.toThrow(
+      /built-in/,
+    );
+  });
+
   test("readMilestone throws for a missing id", async () => {
     await expect(readMilestone(milestonesDir, "MILESTONE-0999")).rejects.toThrow(
       "milestone not found: MILESTONE-0999",
     );
   });
 
-  test("listMilestones sorts by id", async () => {
+  test("listMilestones sorts by id and puts the built-in archive last", async () => {
     await writeMilestone(milestonesDir, {
       id: "MILESTONE-0002",
       title: "b",
@@ -72,6 +86,7 @@ describe("milestone-store", () => {
     expect(milestones.map((milestone) => milestone.id)).toEqual([
       "MILESTONE-0001",
       "MILESTONE-0002",
+      ARCHIVE_MILESTONE_ID,
     ]);
   });
 });

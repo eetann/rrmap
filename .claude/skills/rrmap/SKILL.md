@@ -31,7 +31,7 @@ description: |
 | `rrmap list [--status <status>] [--parent <id>] [--milestone <id>]` | タスク一覧を表示 |
 | `rrmap show <id>` | タスクの詳細（本文込み）を表示 |
 | `rrmap create <title> [--parent <id>] [--milestone <id>]` | タスクを作成（IDは自動採番） |
-| `rrmap edit <id> [--status <status>] [--title <title>]` | status/titleを変更 |
+| `rrmap edit <id>... [--status <status>] [--title <title>] [--milestone <id\|none>]` | status/title/milestoneを変更（idは複数まとめて指定できる。`none`で未分類に戻す） |
 | `rrmap format` | タスク・マイルストーンのMarkdownフォーマットを表示 |
 
 `status`: `draft`（雑に書いた） / `refined`（分割済み・実装を見据えて整理済み） / `in_progress` / `done` / `cancelled`
@@ -45,9 +45,23 @@ description: |
 | `rrmap milestone list [--status <status>]` | マイルストーン一覧を表示 |
 | `rrmap milestone show <id>` | マイルストーンの詳細（本文込み）を表示 |
 | `rrmap milestone create <title>` | マイルストーンを作成（IDは自動採番） |
-| `rrmap milestone edit <id> [--status <status>] [--title <title>]` | status/titleを変更 |
+| `rrmap milestone edit <id> [--status <status>] [--title <title>] [--hidden\|--no-hidden]` | status/title/hiddenを変更 |
 
 `status`: `planned` / `active` / `completed`
+
+`hidden: true`のマイルストーンはWeb UIのタスク一覧から外れる（サイドバーの「非表示のマイルストーン」からは開ける）。
+
+### 組み込みマイルストーン
+
+`MILESTONE-ARCHIVED`はrrmapが用意する組み込みのマイルストーンで、ファイルは存在しない。片付いたタスクの置き場で、
+一覧から外したいタスクはここへ移す。ユーザーから「完了したタスクを片付けて」と言われたときはこれを使う。
+
+```bash
+rrmap edit TASK-0001 TASK-0007 --milestone MILESTONE-ARCHIVED
+```
+
+タイトル・ステータス・本文は編集できず、このidのファイルを作ることもできない。`rrmap list`はアーカイブ済みの
+タスクも今までどおり表示する。
 
 厳密な最新フォーマットは`rrmap format`でも確認できる（このSKILL.mdの内容と食い違う場合はコマンドの出力を正とする）。
 
@@ -59,7 +73,7 @@ id: TASK-0001
 title: タスクのタイトル
 status: draft
 parent: null       # 分割元の親タスクid（TASK-XXXX形式）。トップレベルなら null。親子関係は1階層のみ
-milestone: null    # 所属するマイルストーンid（MILESTONE-XXXX形式）。どこにも属さなければ null
+milestone: null    # 所属するマイルストーンid（MILESTONE-XXXX形式）。どこにも属さなければ null。MILESTONE-ARCHIVEDも指定できる
 ---
 ```
 
@@ -89,6 +103,7 @@ milestone: null    # 所属するマイルストーンid（MILESTONE-XXXX形式�
 id: MILESTONE-0001
 title: マイルストーンのタイトル
 status: planned
+hidden: false      # trueにするとWeb UIのタスク一覧から外れる
 ---
 ```
 

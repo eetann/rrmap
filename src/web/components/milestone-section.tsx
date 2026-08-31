@@ -3,6 +3,7 @@ import type { Milestone } from "../../milestone";
 import type { Task } from "../../task";
 import { AddTaskRow } from "./add-task-row";
 import { CopyIdButton } from "./copy-id-button";
+import { ArchiveIcon } from "./icons";
 import { TaskRow } from "./task-row";
 
 export function MilestoneSection({
@@ -11,16 +12,23 @@ export function MilestoneSection({
   onOpenTask,
   onOpenMilestone,
   onAddTask,
+  onArchiveTasks,
 }: {
   milestone: Milestone | null;
   tasks: Task[];
   onOpenTask: (id: string) => void;
   onOpenMilestone: (id: string) => void;
   onAddTask: (title: string) => Promise<void>;
+  // 未分類セクションでだけ使う。片付いたタスクをまとめてアーカイブへ移す
+  onArchiveTasks?: (ids: string[]) => void;
 }) {
   const doneCount = tasks.filter((t) => t.status === "done").length;
   const progressPct = tasks.length === 0 ? 0 : Math.round((doneCount / tasks.length) * 100);
   const meta = milestone ? MILESTONE_STATUS_META[milestone.status] : null;
+  const archivableTasks =
+    milestone === null && onArchiveTasks
+      ? tasks.filter((t) => t.status === "done" || t.status === "cancelled")
+      : [];
 
   return (
     <section className="mb-8">
@@ -46,6 +54,24 @@ export function MilestoneSection({
             </span>
           )}
         </div>
+        {archivableTasks.length > 0 && onArchiveTasks && (
+          <button
+            type="button"
+            onClick={() => {
+              if (
+                window.confirm(
+                  `完了・中止の${archivableTasks.length}件をアーカイブへ移動しますか？（アーカイブからは戻せます）`,
+                )
+              ) {
+                onArchiveTasks(archivableTasks.map((t) => t.id));
+              }
+            }}
+            className="flex flex-shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <ArchiveIcon size={13} />
+            完了・中止 {archivableTasks.length} 件をアーカイブ
+          </button>
+        )}
         {milestone && (
           <div className="flex flex-shrink-0 items-center gap-3">
             <span className="text-xs text-muted-foreground tabular-nums">

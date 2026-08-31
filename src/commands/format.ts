@@ -1,5 +1,5 @@
 import { define } from "gunshi";
-import { MILESTONE_STATUSES } from "../milestone";
+import { ARCHIVE_MILESTONE_ID, MILESTONE_STATUSES } from "../milestone";
 import { TASK_STATUSES } from "../task";
 
 export const formatCommand = define({
@@ -31,6 +31,13 @@ status: planned              # ${MILESTONE_STATUSES.join(" | ")}
 hidden: false                # trueにするとWeb UIのタスク一覧から非表示（サイドバーの「非表示のマイルストーン」からは開ける）
 ---
 
-本文は自由なMarkdown。目的・スコープなど残しておきたいことを書く。`);
+本文は自由なMarkdown。目的・スコープなど残しておきたいことを書く。
+
+# 組み込みマイルストーン
+
+${ARCHIVE_MILESTONE_ID} だけはrrmapが用意する組み込みマイルストーンで、対応するファイルは存在しない。
+片付けておきたいタスクの置き場で、タスクの milestone に指定できる。非表示マイルストーンと同じ扱いになり、
+Web UIのタスク一覧には出ず、サイドバーの「非表示のマイルストーン」から中身を確認できる。
+このidのファイルを作ったり、タイトル・ステータス・本文を編集したりはできない。`);
   },
 });

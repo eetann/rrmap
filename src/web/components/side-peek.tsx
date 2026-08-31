@@ -8,11 +8,16 @@ import {
   TASK_STATUS_META,
   TASK_STATUS_OPTIONS,
 } from "@/lib/status";
-import type { Milestone, MilestoneStatus } from "../../milestone";
+import {
+  ARCHIVE_MILESTONE_ID,
+  isArchiveMilestoneId,
+  type Milestone,
+  type MilestoneStatus,
+} from "../../milestone";
 import type { Task, TaskStatus } from "../../task";
 import { Combobox, type ComboboxOption } from "./combobox";
 import { CopyIdButton } from "./copy-id-button";
-import { TrashIcon, XIcon } from "./icons";
+import { ArchiveIcon, TrashIcon, XIcon } from "./icons";
 
 const BODY_PLACEHOLDER = "メモを書く（方針・意思決定など）";
 // マイルストーン未設定(null)をComboboxの値として扱うための番兵。IDは MS-xxxx 形式なので衝突しない
@@ -27,6 +32,7 @@ export function SidePeek({
   milestones,
   onClose,
   onTaskChange,
+  onTaskArchive,
   onTaskDelete,
   onMilestoneChange,
   onOpenTask,
@@ -39,6 +45,7 @@ export function SidePeek({
     patch: Partial<Pick<Task, "title" | "status" | "milestone" | "body">>,
     debounce?: boolean,
   ) => void;
+  onTaskArchive: (id: string) => void;
   onTaskDelete: (id: string) => void;
   onMilestoneChange: (
     id: string,
@@ -51,6 +58,9 @@ export function SidePeek({
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const targetKey =
     target.type === "task" ? `task-${target.task.id}` : `milestone-${target.milestone.id}`;
+  // 組み込みのアーカイブはファイルを持たないので、タイトル・ステータス・本文を編集できない
+  const isBuiltinMilestone =
+    target.type === "milestone" && isArchiveMilestoneId(target.milestone.id);
   const [isEditingBody, setIsEditingBody] = useState(false);
   const isComposingTitleRef = useRef(false);
   const isComposingBodyRef = useRef(false);
@@ -58,9 +68,13 @@ export function SidePeek({
   const isBodyFocusedRef = useRef(false);
 
   useEffect(() => {
+    // 編集できないタイトルを選択状態にすると書き換えられそうに見えてしまう
+    if (isBuiltinMilestone) {
+      return;
+    }
     titleRef.current?.focus();
     titleRef.current?.select();
-  }, []);
+  }, [isBuiltinMilestone]);
 
   useEffect(() => {
     setIsEditingBody(false);
@@ -198,6 +212,16 @@ export function SidePeek({
           <CopyIdButton id={idLabel} />
         </div>
         <div className="flex items-center gap-1">
+          {target.type === "task" && target.task.milestone !== ARCHIVE_MILESTONE_ID && (
+            <button
+              type="button"
+              onClick={() => onTaskArchive(target.task.id)}
+              title="アーカイブへ移動"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <ArchiveIcon />
+            </button>
+          )}
           {target.type === "task" && (
             <button
               type="button"
@@ -229,6 +253,7 @@ export function SidePeek({
         <textarea
           ref={titleRef}
           rows={1}
+          readOnly={isBuiltinMilestone}
           value={titleValue}
           onChange={(e) => handleTitleChange(e.target.value)}
           onCompositionStart={() => {
@@ -253,22 +278,24 @@ export function SidePeek({
           className="w-full resize-none overflow-hidden break-words border-b border-transparent bg-transparent py-1 text-[19px] font-bold leading-snug text-foreground outline-none focus:border-primary"
         />
 
-        <div className="flex items-center gap-3 text-[13px]">
-          <span className="w-[88px] flex-shrink-0 text-muted-foreground">ステータス</span>
-          <Combobox
-            value={target.type === "task" ? target.task.status : target.milestone.status}
-            options={statusOptions}
-            onChange={handleStatusChange}
-            // 選択肢が少なく一覧で足りるので検索欄は出さない
-            searchable={false}
-            ariaLabel="ステータス"
-            className="w-fit rounded-full py-1.5 pr-3 pl-3 text-[12.5px] font-semibold"
-            style={{ background: statusMeta.bg, color: statusMeta.fg }}
-            contentClassName="w-[170px] min-w-0"
-          />
-        </div>
+        {!isBuiltinMilestone && (
+          <div className="flex items-center gap-3 text-[13px]">
+            <span className="w-[88px] flex-shrink-0 text-muted-foreground">ステータス</span>
+            <Combobox
+              value={target.type === "task" ? target.task.status : target.milestone.status}
+              options={statusOptions}
+              onChange={handleStatusChange}
+              // 選択肢が少なく一覧で足りるので検索欄は出さない
+              searchable={false}
+              ariaLabel="ステータス"
+              className="w-fit rounded-full py-1.5 pr-3 pl-3 text-[12.5px] font-semibold"
+              style={{ background: statusMeta.bg, color: statusMeta.fg }}
+              contentClassName="w-[170px] min-w-0"
+            />
+          </div>
+        )}
 
-        {target.type === "milestone" && (
+        {target.type === "milestone" && !isBuiltinMilestone && (
           <div className="flex items-center gap-3 text-[13px]">
             <span className="w-[88px] flex-shrink-0 text-muted-foreground">タスク一覧</span>
             <label className="flex items-center gap-2 text-foreground">
@@ -309,7 +336,13 @@ export function SidePeek({
 
         <div className="h-px bg-border" />
 
-        {isEditingBody ? (
+        {isBuiltinMilestone ? (
+          <p className="text-[13px] leading-relaxed text-muted-foreground">
+            {
+              "rrmapが用意している組み込みのマイルストーン。片付けておきたいタスクの置き場で、タイトルや本文は編集できない。ここから別のマイルストーンへ移し直せる。"
+            }
+          </p>
+        ) : isEditingBody ? (
           <textarea
             ref={bodyRef}
             value={bodyValue}
