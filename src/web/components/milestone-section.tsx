@@ -1,5 +1,7 @@
+import { Fragment } from "react";
 import type { ReorderControls } from "@/lib/reorder";
 import { MILESTONE_STATUS_META } from "@/lib/status";
+import { buildTaskTree } from "@/lib/task-tree";
 import { cn } from "@/lib/utils";
 import type { Milestone } from "../../milestone";
 import type { Task } from "../../task";
@@ -114,8 +116,13 @@ export function MilestoneSection({
         </div>
       )}
       <div className="flex flex-col border-t border-border">
-        {tasks.map((task) => (
-          <TaskRow key={task.id} task={task} onClick={() => onOpenTask(task.id)} />
+        {buildTaskTree(tasks).map((node) => (
+          <Fragment key={node.task.id}>
+            <TaskRow task={node.task} onClick={() => onOpenTask(node.task.id)} />
+            {node.children.map((child) => (
+              <TaskRow key={child.id} task={child} onClick={() => onOpenTask(child.id)} isChild />
+            ))}
+          </Fragment>
         ))}
       </div>
       <AddTaskRow onAdd={onAddTask} />

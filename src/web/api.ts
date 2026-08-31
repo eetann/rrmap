@@ -108,6 +108,31 @@ apiApp.patch("/api/tasks/:id", async (c) => {
     }
     task.milestone = body.milestone;
   }
+  if (body.parent !== undefined) {
+    if (body.parent !== null) {
+      if (!isTaskId(body.parent)) {
+        return c.json({ error: "invalid parent task id" }, 400);
+      }
+      if (body.parent === id) {
+        return c.json({ error: "task cannot be its own parent" }, 400);
+      }
+      let parentTask: Awaited<ReturnType<typeof readTask>>;
+      try {
+        parentTask = await readTask(tasksDir, body.parent);
+      } catch {
+        return c.json({ error: "parent task not found" }, 400);
+      }
+      // 親子関係は1階層のみ。子タスクを親にはできず、子を持つタスクも子にはなれない
+      if (parentTask.parent !== null) {
+        return c.json({ error: "parent task is itself a child task" }, 400);
+      }
+      const tasks = await listTasks(tasksDir);
+      if (tasks.some((t) => t.parent === id)) {
+        return c.json({ error: "task with child tasks cannot have a parent" }, 400);
+      }
+    }
+    task.parent = body.parent;
+  }
 
   await writeTask(tasksDir, task);
   return c.json(task);

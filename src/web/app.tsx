@@ -96,7 +96,7 @@ export function App() {
   const updateTask = useCallback(
     (
       id: string,
-      patch: Partial<Pick<Task, "title" | "status" | "milestone" | "body">>,
+      patch: Partial<Pick<Task, "title" | "status" | "milestone" | "parent" | "body">>,
       debounce = false,
     ) => {
       setTasks((prev) => prev?.map((t) => (t.id === id ? { ...t, ...patch } : t)) ?? prev);
@@ -275,6 +275,7 @@ export function App() {
       {target && (
         <SidePeek
           target={target}
+          tasks={tasks}
           milestones={milestones}
           onClose={closePanel}
           onTaskChange={updateTask}

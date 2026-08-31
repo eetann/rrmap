@@ -17,11 +17,13 @@ import {
 import type { Task, TaskStatus } from "../../task";
 import { Combobox, type ComboboxOption } from "./combobox";
 import { CopyIdButton } from "./copy-id-button";
-import { ArchiveIcon, TrashIcon, XIcon } from "./icons";
+import { ArchiveIcon, ArrowUpRightIcon, TrashIcon, XIcon } from "./icons";
 
 const BODY_PLACEHOLDER = "メモを書く（方針・意思決定など）";
 // マイルストーン未設定(null)をComboboxの値として扱うための番兵。IDは MS-xxxx 形式なので衝突しない
 const NO_MILESTONE = "__none__";
+// 親タスクなし(null)をComboboxの値として扱うための番兵。IDは TASK-xxxx 形式なので衝突しない
+const NO_PARENT = "__no_parent__";
 
 export type SidePeekTarget =
   | { type: "task"; task: Task }
@@ -29,6 +31,7 @@ export type SidePeekTarget =
 
 export function SidePeek({
   target,
+  tasks,
   milestones,
   onClose,
   onTaskChange,
@@ -38,11 +41,13 @@ export function SidePeek({
   onOpenTask,
 }: {
   target: SidePeekTarget;
+  // 親タスクの選択肢と子タスクの一覧に使う
+  tasks: Task[];
   milestones: Milestone[];
   onClose: () => void;
   onTaskChange: (
     id: string,
-    patch: Partial<Pick<Task, "title" | "status" | "milestone" | "body">>,
+    patch: Partial<Pick<Task, "title" | "status" | "milestone" | "parent" | "body">>,
     debounce?: boolean,
   ) => void;
   onTaskArchive: (id: string) => void;
@@ -123,6 +128,19 @@ export function SidePeek({
     { value: NO_MILESTONE, label: "未分類" },
     ...milestones.map((m) => ({ value: m.id, label: m.title })),
   ];
+  const parentTaskId = target.type === "task" ? target.task.parent : null;
+  const childTasks = target.type === "task" ? tasks.filter((t) => t.parent === target.task.id) : [];
+  // 親子関係は1階層のみなので、子を持つタスクは子になれず、子タスクは親になれない
+  const canHaveParent = target.type === "task" && childTasks.length === 0;
+  const parentOptions: ComboboxOption[] =
+    target.type === "task"
+      ? [
+          { value: NO_PARENT, label: "なし" },
+          ...tasks
+            .filter((t) => t.id !== target.task.id && t.parent === null)
+            .map((t) => ({ value: t.id, label: t.title })),
+        ]
+      : [];
 
   const [titleValue, setTitleValue] = useState(title);
   const [bodyValue, setBodyValue] = useState(body);
@@ -342,6 +360,44 @@ export function SidePeek({
           </div>
         )}
 
+        {target.type === "task" && (
+          <div className="flex items-center gap-3 text-[13px]">
+            <span className="w-[88px] flex-shrink-0 text-muted-foreground">親タスク</span>
+            {canHaveParent ? (
+              <>
+                <Combobox
+                  value={target.task.parent ?? NO_PARENT}
+                  options={parentOptions}
+                  onChange={(value) => {
+                    const parent = value === NO_PARENT ? null : value;
+                    if (parent === target.task.parent) {
+                      return;
+                    }
+                    onTaskChange(target.task.id, { parent });
+                  }}
+                  ariaLabel="親タスク"
+                  placeholder="なし"
+                  searchPlaceholder="タスクを検索"
+                  emptyText="タスクが見つかりません"
+                  className="min-w-0 flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-left text-[13px] text-foreground"
+                />
+                {parentTaskId !== null && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenTask(parentTaskId)}
+                    title="親タスクを開く"
+                    className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    <ArrowUpRightIcon />
+                  </button>
+                )}
+              </>
+            ) : (
+              <span className="text-muted-foreground">子タスクがあるため設定できません</span>
+            )}
+          </div>
+        )}
+
         <div className="h-px bg-border" />
 
         {isBuiltinMilestone ? (
@@ -399,27 +455,49 @@ export function SidePeek({
         )}
 
         {target.type === "milestone" && (
-          <div className="flex flex-col gap-1.5">
-            <div className="mb-0.5 text-[11px] tracking-wide text-muted-foreground uppercase">
-              このマイルストーンのタスク
-            </div>
-            {target.relatedTasks.length === 0 ? (
-              <p className="text-[13px] text-muted-foreground">タスクなし</p>
-            ) : (
-              target.relatedTasks.map((t) => (
-                <button
-                  type="button"
-                  key={t.id}
-                  onClick={() => onOpenTask(t.id)}
-                  className="break-words rounded-lg border border-border px-3 py-2 text-left text-[13px] hover:bg-muted"
-                >
-                  {t.title}
-                </button>
-              ))
-            )}
-          </div>
+          <RelatedTaskList
+            label="このマイルストーンのタスク"
+            tasks={target.relatedTasks}
+            onOpenTask={onOpenTask}
+          />
+        )}
+
+        {childTasks.length > 0 && (
+          <RelatedTaskList label="子タスク" tasks={childTasks} onOpenTask={onOpenTask} />
         )}
       </div>
+    </div>
+  );
+}
+
+function RelatedTaskList({
+  label,
+  tasks,
+  onOpenTask,
+}: {
+  label: string;
+  tasks: Task[];
+  onOpenTask: (id: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="mb-0.5 text-[11px] tracking-wide text-muted-foreground uppercase">
+        {label}
+      </div>
+      {tasks.length === 0 ? (
+        <p className="text-[13px] text-muted-foreground">タスクなし</p>
+      ) : (
+        tasks.map((t) => (
+          <button
+            type="button"
+            key={t.id}
+            onClick={() => onOpenTask(t.id)}
+            className="break-words rounded-lg border border-border px-3 py-2 text-left text-[13px] hover:bg-muted"
+          >
+            {t.title}
+          </button>
+        ))
+      )}
     </div>
   );
 }

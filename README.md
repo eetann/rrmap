@@ -14,7 +14,7 @@ rrmapは、ロードマップを**タスク単位のMarkdownファイル**とし
 
 ![タスク一覧画面](docs/images/web-ui-tasks.png)
 
-タスクをクリックすると、ステータス・所属マイルストーン・本文（Markdown）をその場で編集できます。
+タスクをクリックすると、ステータス・所属マイルストーン・親タスク・本文（Markdown）をその場で編集できます。
 
 ![タスク詳細画面](docs/images/web-ui-task-detail.png)
 
@@ -80,6 +80,8 @@ milestone: MILESTONE-0001
 ```bash
 rrmap create "パスワードリセット機能" --parent TASK-0001
 ```
+
+Web UIでは、子タスクは一覧で親タスクの下に字下げして並び、詳細画面から親タスクを付け替えられます。
 
 ## Web UIで見る
 

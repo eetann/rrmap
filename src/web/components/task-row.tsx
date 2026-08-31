@@ -1,4 +1,5 @@
 import { TASK_STATUS_META } from "@/lib/status";
+import { cn } from "@/lib/utils";
 import type { Task } from "../../task";
 import { CopyIdButton } from "./copy-id-button";
 import { CheckIcon } from "./icons";
@@ -7,10 +8,13 @@ export function TaskRow({
   task,
   onClick,
   milestoneLabel,
+  isChild = false,
 }: {
   task: Task;
   onClick: () => void;
   milestoneLabel?: string;
+  // 親タスクの直下にぶら下がる子タスクは字下げして見せる
+  isChild?: boolean;
 }) {
   const meta = TASK_STATUS_META[task.status];
 
@@ -25,7 +29,10 @@ export function TaskRow({
           onClick();
         }
       }}
-      className="flex cursor-pointer items-center gap-3 border-b border-border px-1.5 py-3 hover:bg-muted"
+      className={cn(
+        "flex cursor-pointer items-center gap-3 border-b border-border px-1.5 py-3 hover:bg-muted",
+        isChild && "pl-8",
+      )}
     >
       <div className="flex w-[18px] flex-shrink-0 items-center justify-center">
         {task.status === "done" ? (
