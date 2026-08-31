@@ -9,6 +9,13 @@ import {
   parseMilestone,
   stringifyMilestone,
 } from "./milestone";
+import {
+  applyPartialOrder,
+  MILESTONE_ORDER_FILE_NAME,
+  parseMilestoneOrder,
+  sortMilestonesByOrder,
+  stringifyMilestoneOrder,
+} from "./milestone-order";
 
 export function resolveMilestonesDir(baseDir: string = process.cwd()): string {
   return join(baseDir, ".rrmap", "milestones");
@@ -27,6 +34,38 @@ async function listMilestoneFiles(milestonesDir: string): Promise<string[]> {
   return entries.filter((entry) => entry.endsWith(".md"));
 }
 
+export function resolveMilestoneOrderPath(milestonesDir: string): string {
+  return join(milestonesDir, MILESTONE_ORDER_FILE_NAME);
+}
+
+export async function readMilestoneOrder(milestonesDir: string): Promise<string[]> {
+  let raw: string;
+  try {
+    raw = await readFile(resolveMilestoneOrderPath(milestonesDir), "utf8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return [];
+    }
+    throw error;
+  }
+  try {
+    return parseMilestoneOrder(raw);
+  } catch {
+    // 手で壊されたJSONで一覧ごと読めなくならないよう、並び順だけ諦めてid順に戻す
+    return [];
+  }
+}
+
+export async function writeMilestoneOrder(milestonesDir: string, ids: string[]): Promise<void> {
+  await mkdir(milestonesDir, { recursive: true });
+  await writeFile(
+    resolveMilestoneOrderPath(milestonesDir),
+    // 組み込みのアーカイブは並び替えの対象外なので、順序ファイルにも残さない
+    stringifyMilestoneOrder(ids.filter((id) => !isArchiveMilestoneId(id))),
+    "utf8",
+  );
+}
+
 export async function listMilestones(milestonesDir: string): Promise<Milestone[]> {
   const files = await listMilestoneFiles(milestonesDir);
   const milestones = await Promise.all(
@@ -35,9 +74,26 @@ export async function listMilestones(milestonesDir: string): Promise<Milestone[]
       return parseMilestone(raw);
     }),
   );
-  milestones.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  // 組み込みのアーカイブはファイルを持たないので、採番順には並べず常に末尾に置く
-  return [...milestones, createArchiveMilestone()];
+  const order = await readMilestoneOrder(milestonesDir);
+  // 組み込みのアーカイブはファイルを持たないので、並び順によらず常に末尾に置く
+  return sortMilestonesByOrder([...milestones, createArchiveMilestone()], order);
+}
+
+/**
+ * 一覧に出ているマイルストーンだけを並び替えた結果を受け取り、order.jsonへ保存する。
+ * 渡されなかったマイルストーン（非表示のものなど）の位置は動かさない。
+ */
+export async function reorderMilestones(
+  milestonesDir: string,
+  reorderedIds: string[],
+): Promise<Milestone[]> {
+  const milestones = await listMilestones(milestonesDir);
+  const fullIds = milestones
+    .filter((milestone) => !isArchiveMilestoneId(milestone.id))
+    .map((milestone) => milestone.id);
+  const nextOrder = applyPartialOrder(fullIds, reorderedIds);
+  await writeMilestoneOrder(milestonesDir, nextOrder);
+  return sortMilestonesByOrder(milestones, nextOrder);
 }
 
 export async function readMilestone(milestonesDir: string, id: string): Promise<Milestone> {

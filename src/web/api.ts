@@ -5,6 +5,7 @@ import { isArchiveMilestoneId, isMilestoneId, isMilestoneStatus } from "../miles
 import {
   listMilestones,
   readMilestone,
+  reorderMilestones,
   resolveMilestonesDir,
   writeMilestone,
 } from "../milestone-store";
@@ -128,6 +129,18 @@ apiApp.delete("/api/tasks/:id", async (c) => {
 
 apiApp.get("/api/milestones", async (c) => {
   const milestones = await listMilestones(resolveMilestonesDir());
+  return c.json(milestones);
+});
+
+// 一覧に出ているマイルストーンの並び順を丸ごと受け取る。
+// :id のPATCHと衝突しないよう、パスではなくメソッドで分けている
+apiApp.put("/api/milestones/order", async (c) => {
+  const body = await c.req.json();
+  if (!Array.isArray(body.ids) || !body.ids.every((id: unknown) => isMilestoneId(id))) {
+    return c.json({ error: "ids must be an array of milestone ids" }, 400);
+  }
+
+  const milestones = await reorderMilestones(resolveMilestonesDir(), body.ids);
   return c.json(milestones);
 });
 

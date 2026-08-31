@@ -1,9 +1,12 @@
+import type { ReorderControls } from "@/lib/reorder";
 import { MILESTONE_STATUS_META } from "@/lib/status";
+import { cn } from "@/lib/utils";
 import type { Milestone } from "../../milestone";
 import type { Task } from "../../task";
 import { AddTaskRow } from "./add-task-row";
 import { CopyIdButton } from "./copy-id-button";
 import { ArchiveIcon } from "./icons";
+import { ReorderControlsGroup } from "./reorder-controls";
 import { TaskRow } from "./task-row";
 
 export function MilestoneSection({
@@ -13,6 +16,7 @@ export function MilestoneSection({
   onOpenMilestone,
   onAddTask,
   onArchiveTasks,
+  reorder,
 }: {
   milestone: Milestone | null;
   tasks: Task[];
@@ -21,6 +25,8 @@ export function MilestoneSection({
   onAddTask: (title: string) => Promise<void>;
   // 未分類セクションでだけ使う。片付いたタスクをまとめてアーカイブへ移す
   onArchiveTasks?: (ids: string[]) => void;
+  // 未分類セクションは並び替えの対象外なので、そのときだけ渡さない
+  reorder?: ReorderControls;
 }) {
   const doneCount = tasks.filter((t) => t.status === "done").length;
   const progressPct = tasks.length === 0 ? 0 : Math.round((doneCount / tasks.length) * 100);
@@ -31,7 +37,22 @@ export function MilestoneSection({
       : [];
 
   return (
-    <section className="mb-8">
+    <section
+      {...reorder?.itemProps}
+      className={cn(
+        "group/section relative mb-8 rounded-md",
+        reorder?.isDragging === true && "opacity-40",
+        reorder?.isOver === true && "ring-2 ring-ring ring-offset-4 ring-offset-background",
+      )}
+    >
+      {reorder && (
+        <ReorderControlsGroup
+          controls={reorder}
+          direction="vertical"
+          // 見出しの左の余白へ逃がして、通常時はレイアウトに影響させない
+          className="absolute -left-8 top-0 opacity-0 transition-opacity group-hover/section:opacity-100 focus-within:opacity-100"
+        />
+      )}
       <div className="mb-2 flex items-baseline justify-between">
         <div className="flex items-center gap-2.5">
           {milestone ? (

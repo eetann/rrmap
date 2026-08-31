@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDragReorder } from "@/lib/reorder";
 import { type TaskView, useRoute } from "@/lib/route";
-import { ARCHIVE_MILESTONE_ID, type Milestone } from "../milestone";
+import { ARCHIVE_MILESTONE_ID, isArchiveMilestoneId, type Milestone } from "../milestone";
+import { applyPartialOrder, sortMilestonesByOrder } from "../milestone-order";
 import type { Task } from "../task";
 import { AllTasksList } from "./components/all-tasks-list";
 import { SearchIcon } from "./components/icons";
@@ -128,6 +130,28 @@ export function App() {
     [schedulePatch],
   );
 
+  const reorderMilestones = useCallback((reorderedIds: string[]) => {
+    setMilestones((prev) => {
+      if (!prev) {
+        return prev;
+      }
+      const fullIds = prev.filter((m) => !isArchiveMilestoneId(m.id)).map((m) => m.id);
+      return sortMilestonesByOrder(prev, applyPartialOrder(fullIds, reorderedIds));
+    });
+    fetch("/api/milestones/order", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: reorderedIds }),
+    }).catch(() => {});
+  }, []);
+
+  // 一覧とサイドバーで同じ並びを共有するので、フックも1つで済ませる
+  const visibleMilestoneIds = useMemo(
+    () => (milestones ?? []).filter((m) => !m.hidden).map((m) => m.id),
+    [milestones],
+  );
+  const { getControls } = useDragReorder(visibleMilestoneIds, reorderMilestones);
+
   const addTask = useCallback(async (milestoneId: string | null, title: string) => {
     const res = await fetch("/api/tasks", {
       method: "POST",
@@ -201,6 +225,7 @@ export function App() {
         view={route.view}
         onChangeView={changeView}
         onOpenMilestone={openMilestone}
+        getReorderControls={getControls}
       />
       <div className="min-w-0 flex-1 px-14 py-11 pb-16">
         <div className="mb-8 flex items-center justify-between">
@@ -231,6 +256,7 @@ export function App() {
                 onOpenTask={openTask}
                 onOpenMilestone={openMilestone}
                 onAddTask={(title) => addTask(milestone.id, title)}
+                reorder={getControls(milestone.id)}
               />
             ))}
 
