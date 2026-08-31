@@ -271,9 +271,17 @@ export function SidePeek({
             commitTitle(e.currentTarget.value, false);
           }}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
+            if (e.key !== "Enter") {
+              return;
             }
+            // タイトルは1行なので改行は入れさせない
+            e.preventDefault();
+            // IMEの変換を確定するEnterまで拾うと、入力の途中で本文へ飛んでしまう
+            if (e.nativeEvent.isComposing) {
+              return;
+            }
+            // 本文へフォーカスが移るとタイトルがblurされ、そこでタイトルが確定する
+            setIsEditingBody(true);
           }}
           className="w-full resize-none overflow-hidden break-words border-b border-transparent bg-transparent py-1 text-[19px] font-bold leading-snug text-foreground outline-none focus:border-primary"
         />
