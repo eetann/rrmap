@@ -247,7 +247,7 @@ export function App() {
               </button>
             )}
             <h1 className="min-w-0 truncate text-[23px] font-bold">
-              {route.view === "all" ? "すべてのタスク" : "マイルストーン"}
+              {route.view === "all" ? "すべてのタスク" : "ロードマップ"}
             </h1>
           </div>
           <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-muted-foreground">

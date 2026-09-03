@@ -135,7 +135,7 @@ export function Sidebar({
           }
         >
           <FlagIcon />
-          マイルストーン
+          ロードマップ
         </button>
       </div>
 
