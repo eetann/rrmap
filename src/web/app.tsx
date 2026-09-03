@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDragReorder } from "@/lib/reorder";
 import { type TaskView, useRoute } from "@/lib/route";
+import { useSidebarCollapse } from "@/lib/sidebar-collapse";
 import { ARCHIVE_MILESTONE_ID, isArchiveMilestoneId, type Milestone } from "../milestone";
 import { applyPartialOrder, sortMilestonesByOrder } from "../milestone-order";
 import type { Task } from "../task";
 import { AllTasksList } from "./components/all-tasks-list";
-import { SearchIcon } from "./components/icons";
+import { PanelLeftIcon, SearchIcon } from "./components/icons";
 import { MilestoneSection } from "./components/milestone-section";
 import { Sidebar } from "./components/sidebar";
 import { SidePeek, type SidePeekTarget } from "./components/side-peek";
@@ -16,6 +17,7 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const { route, navigate } = useRoute();
+  const { collapsed: sidebarCollapsed, toggle: toggleSidebar } = useSidebarCollapse();
   const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const refresh = useCallback(() => {
@@ -218,20 +220,32 @@ export function App() {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar
-        visibleMilestones={visibleMilestones}
-        hiddenMilestones={hiddenMilestones}
-        tasks={tasks}
-        view={route.view}
-        onChangeView={changeView}
-        onOpenMilestone={openMilestone}
-        getReorderControls={getControls}
-      />
+      {!sidebarCollapsed && (
+        <Sidebar
+          visibleMilestones={visibleMilestones}
+          hiddenMilestones={hiddenMilestones}
+          tasks={tasks}
+          view={route.view}
+          onChangeView={changeView}
+          onOpenMilestone={openMilestone}
+          getReorderControls={getControls}
+        />
+      )}
       <div className="min-w-0 flex-1 px-14 py-11 pb-16">
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-[23px] font-bold">
-            {route.view === "all" ? "すべてのタスク" : "マイルストーン"}
-          </h1>
+          <div className="flex min-w-0 items-center gap-3">
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              aria-label={sidebarCollapsed ? "サイドバーを開く" : "サイドバーを閉じる"}
+              className="flex-shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <PanelLeftIcon />
+            </button>
+            <h1 className="min-w-0 truncate text-[23px] font-bold">
+              {route.view === "all" ? "すべてのタスク" : "マイルストーン"}
+            </h1>
+          </div>
           <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-muted-foreground">
             <SearchIcon />
             <input
