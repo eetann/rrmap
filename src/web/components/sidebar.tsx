@@ -3,7 +3,7 @@ import type { TaskView } from "@/lib/route";
 import { cn } from "@/lib/utils";
 import { isArchiveMilestoneId, type Milestone } from "../../milestone";
 import type { Task } from "../../task";
-import { FlagIcon, ListIcon } from "./icons";
+import { FlagIcon, ListIcon, PanelLeftIcon } from "./icons";
 import { ReorderControlsGroup } from "./reorder-controls";
 
 function MilestoneList({
@@ -83,6 +83,7 @@ export function Sidebar({
   view,
   onChangeView,
   onOpenMilestone,
+  onToggleCollapse,
   getReorderControls,
 }: {
   visibleMilestones: Milestone[];
@@ -91,12 +92,25 @@ export function Sidebar({
   view: TaskView;
   onChangeView: (view: TaskView) => void;
   onOpenMilestone: (id: string) => void;
+  onToggleCollapse: () => void;
   getReorderControls: (id: string) => ReorderControls;
 }) {
   return (
     <div className="flex w-[248px] flex-shrink-0 flex-col border-r border-border bg-muted px-5 py-7">
-      <div className="text-lg font-bold tracking-tight">rrmap</div>
-      <div className="mt-1 text-[11px] text-muted-foreground">AIと進めるロードマップ</div>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-lg font-bold tracking-tight">rrmap</div>
+          <div className="mt-1 text-[11px] text-muted-foreground">AIと進めるロードマップ</div>
+        </div>
+        <button
+          type="button"
+          onClick={onToggleCollapse}
+          aria-label="サイドバーを閉じる"
+          className="-mr-1.5 flex-shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-background hover:text-foreground"
+        >
+          <PanelLeftIcon />
+        </button>
+      </div>
 
       <div className="mt-7 flex flex-col gap-0.5">
         <button

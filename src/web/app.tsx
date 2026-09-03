@@ -228,20 +228,24 @@ export function App() {
           view={route.view}
           onChangeView={changeView}
           onOpenMilestone={openMilestone}
+          onToggleCollapse={toggleSidebar}
           getReorderControls={getControls}
         />
       )}
       <div className="min-w-0 flex-1 px-14 py-11 pb-16">
         <div className="mb-8 flex items-center justify-between">
           <div className="flex min-w-0 items-center gap-3">
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              aria-label={sidebarCollapsed ? "サイドバーを開く" : "サイドバーを閉じる"}
-              className="flex-shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              <PanelLeftIcon />
-            </button>
+            {/* 開いているときの閉じるボタンはサイドバー側にあるので、ここは開くためだけに出す */}
+            {sidebarCollapsed && (
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                aria-label="サイドバーを開く"
+                className="flex-shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <PanelLeftIcon />
+              </button>
+            )}
             <h1 className="min-w-0 truncate text-[23px] font-bold">
               {route.view === "all" ? "すべてのタスク" : "マイルストーン"}
             </h1>
