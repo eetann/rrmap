@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import type { ReorderControls } from "@/lib/reorder";
+import { type ReorderControls, useDragReorder } from "@/lib/reorder";
 import { MILESTONE_STATUS_META } from "@/lib/status";
 import { buildTaskTree } from "@/lib/task-tree";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,78 @@ import { ArchiveIcon } from "./icons";
 import { ReorderControlsGroup } from "./reorder-controls";
 import { TaskRow } from "./task-row";
 
+/**
+ * 同じ親を持つタスクだけで並び替えるので、子タスクの一覧は別のフックを持たせる。
+ * 並び順そのものはマイルストーンをまたいだ1本の配列なので、
+ * 親でも子でも「並べ替えた一覧のid」をそのまま送れば足りる。
+ */
+function ChildTaskRows({
+  tasks,
+  onOpenTask,
+  onReorderTasks,
+}: {
+  tasks: Task[];
+  onOpenTask: (id: string) => void;
+  onReorderTasks: (ids: string[]) => void;
+}) {
+  const { getControls } = useDragReorder(
+    tasks.map((task) => task.id),
+    onReorderTasks,
+  );
+
+  return (
+    <>
+      {tasks.map((task) => (
+        <TaskRow
+          key={task.id}
+          task={task}
+          onClick={() => onOpenTask(task.id)}
+          reorder={getControls(task.id)}
+          isChild
+        />
+      ))}
+    </>
+  );
+}
+
+function TaskRows({
+  tasks,
+  onOpenTask,
+  onReorderTasks,
+}: {
+  tasks: Task[];
+  onOpenTask: (id: string) => void;
+  onReorderTasks: (ids: string[]) => void;
+}) {
+  const nodes = buildTaskTree(tasks);
+  // 子タスクは親についていくので、並び替えの対象はトップレベルのタスクだけ
+  const { getControls } = useDragReorder(
+    nodes.map((node) => node.task.id),
+    onReorderTasks,
+  );
+
+  return (
+    <div className="flex flex-col border-t border-border">
+      {nodes.map((node) => (
+        <Fragment key={node.task.id}>
+          <TaskRow
+            task={node.task}
+            onClick={() => onOpenTask(node.task.id)}
+            reorder={getControls(node.task.id)}
+          />
+          {node.children.length > 0 && (
+            <ChildTaskRows
+              tasks={node.children}
+              onOpenTask={onOpenTask}
+              onReorderTasks={onReorderTasks}
+            />
+          )}
+        </Fragment>
+      ))}
+    </div>
+  );
+}
+
 export function MilestoneSection({
   milestone,
   tasks,
@@ -18,6 +90,7 @@ export function MilestoneSection({
   onOpenMilestone,
   onAddTask,
   onArchiveTasks,
+  onReorderTasks,
   reorder,
 }: {
   milestone: Milestone | null;
@@ -27,6 +100,7 @@ export function MilestoneSection({
   onAddTask: (title: string) => Promise<void>;
   // 未分類セクションでだけ使う。片付いたタスクをまとめてアーカイブへ移す
   onArchiveTasks?: (ids: string[]) => void;
+  onReorderTasks: (ids: string[]) => void;
   // 未分類セクションは並び替えの対象外なので、そのときだけ渡さない
   reorder?: ReorderControls;
 }) {
@@ -115,16 +189,7 @@ export function MilestoneSection({
           />
         </div>
       )}
-      <div className="flex flex-col border-t border-border">
-        {buildTaskTree(tasks).map((node) => (
-          <Fragment key={node.task.id}>
-            <TaskRow task={node.task} onClick={() => onOpenTask(node.task.id)} />
-            {node.children.map((child) => (
-              <TaskRow key={child.id} task={child} onClick={() => onOpenTask(child.id)} isChild />
-            ))}
-          </Fragment>
-        ))}
-      </div>
+      <TaskRows tasks={tasks} onOpenTask={onOpenTask} onReorderTasks={onReorderTasks} />
       <AddTaskRow onAdd={onAddTask} />
     </section>
   );

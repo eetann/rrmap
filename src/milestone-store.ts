@@ -9,13 +9,8 @@ import {
   parseMilestone,
   stringifyMilestone,
 } from "./milestone";
-import {
-  applyPartialOrder,
-  MILESTONE_ORDER_FILE_NAME,
-  parseMilestoneOrder,
-  sortMilestonesByOrder,
-  stringifyMilestoneOrder,
-} from "./milestone-order";
+import { sortMilestonesByOrder } from "./milestone-order";
+import { applyPartialOrder, ORDER_FILE_NAME, parseOrder, stringifyOrder } from "./order";
 
 export function resolveMilestonesDir(baseDir: string = process.cwd()): string {
   return join(baseDir, ".rrmap", "milestones");
@@ -35,7 +30,7 @@ async function listMilestoneFiles(milestonesDir: string): Promise<string[]> {
 }
 
 export function resolveMilestoneOrderPath(milestonesDir: string): string {
-  return join(milestonesDir, MILESTONE_ORDER_FILE_NAME);
+  return join(milestonesDir, ORDER_FILE_NAME);
 }
 
 export async function readMilestoneOrder(milestonesDir: string): Promise<string[]> {
@@ -49,7 +44,7 @@ export async function readMilestoneOrder(milestonesDir: string): Promise<string[
     throw error;
   }
   try {
-    return parseMilestoneOrder(raw);
+    return parseOrder(raw);
   } catch {
     // 手で壊されたJSONで一覧ごと読めなくならないよう、並び順だけ諦めてid順に戻す
     return [];
@@ -61,7 +56,7 @@ export async function writeMilestoneOrder(milestonesDir: string, ids: string[]):
   await writeFile(
     resolveMilestoneOrderPath(milestonesDir),
     // 組み込みのアーカイブは並び替えの対象外なので、順序ファイルにも残さない
-    stringifyMilestoneOrder(ids.filter((id) => !isArchiveMilestoneId(id))),
+    stringifyOrder(ids.filter((id) => !isArchiveMilestoneId(id))),
     "utf8",
   );
 }

@@ -1,5 +1,5 @@
 import { type DragEvent, type PointerEvent, useCallback, useState } from "react";
-import { moveItem } from "../../milestone-order";
+import { moveItem } from "../../order";
 
 export interface ReorderControls {
   /** 並び替え対象の行・セクションそのものに広げる */

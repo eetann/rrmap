@@ -9,7 +9,14 @@ import {
   resolveMilestonesDir,
   writeMilestone,
 } from "../milestone-store";
-import { deleteTask, listTasks, readTask, resolveTasksDir, writeTask } from "../store";
+import {
+  deleteTask,
+  listTasks,
+  readTask,
+  reorderTasks,
+  resolveTasksDir,
+  writeTask,
+} from "../store";
 import { isTaskId, isTaskStatus, taskIdFromNumber, taskIdNumber } from "../task";
 import { createFileWatcher } from "./watch";
 
@@ -60,6 +67,18 @@ apiApp.post("/api/tasks", async (c) => {
   };
   await writeTask(tasksDir, task);
   return c.json(task, 201);
+});
+
+// 一覧に出ているタスクの並び順を丸ごと受け取る。
+// :id のPATCHと衝突しないよう、パスではなくメソッドで分けている
+apiApp.put("/api/tasks/order", async (c) => {
+  const body = await c.req.json();
+  if (!Array.isArray(body.ids) || !body.ids.every((id: unknown) => isTaskId(id))) {
+    return c.json({ error: "ids must be an array of task ids" }, 400);
+  }
+
+  const tasks = await reorderTasks(resolveTasksDir(), body.ids);
+  return c.json(tasks);
 });
 
 apiApp.patch("/api/tasks/:id", async (c) => {

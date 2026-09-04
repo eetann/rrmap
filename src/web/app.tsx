@@ -3,8 +3,10 @@ import { useDragReorder } from "@/lib/reorder";
 import { type TaskView, useRoute } from "@/lib/route";
 import { useSidebarCollapse } from "@/lib/sidebar-collapse";
 import { ARCHIVE_MILESTONE_ID, isArchiveMilestoneId, type Milestone } from "../milestone";
-import { applyPartialOrder, sortMilestonesByOrder } from "../milestone-order";
+import { sortMilestonesByOrder } from "../milestone-order";
+import { applyPartialOrder } from "../order";
 import type { Task } from "../task";
+import { sortTasksByOrder } from "../task-order";
 import { AllTasksList } from "./components/all-tasks-list";
 import { PanelLeftIcon, SearchIcon } from "./components/icons";
 import { MilestoneSection } from "./components/milestone-section";
@@ -147,6 +149,25 @@ export function App() {
     }).catch(() => {});
   }, []);
 
+  const reorderTasks = useCallback((reorderedIds: string[]) => {
+    setTasks((prev) =>
+      prev
+        ? sortTasksByOrder(
+            prev,
+            applyPartialOrder(
+              prev.map((t) => t.id),
+              reorderedIds,
+            ),
+          )
+        : prev,
+    );
+    fetch("/api/tasks/order", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: reorderedIds }),
+    }).catch(() => {});
+  }, []);
+
   // 一覧とサイドバーで同じ並びを共有するので、フックも1つで済ませる
   const visibleMilestoneIds = useMemo(
     () => (milestones ?? []).filter((m) => !m.hidden).map((m) => m.id),
@@ -275,6 +296,7 @@ export function App() {
                 onOpenTask={openTask}
                 onOpenMilestone={openMilestone}
                 onAddTask={(title) => addTask(milestone.id, title)}
+                onReorderTasks={reorderTasks}
                 reorder={getControls(milestone.id)}
               />
             ))}
@@ -286,6 +308,7 @@ export function App() {
               onOpenMilestone={() => {}}
               onAddTask={(title) => addTask(null, title)}
               onArchiveTasks={archiveTasks}
+              onReorderTasks={reorderTasks}
             />
           </>
         )}
