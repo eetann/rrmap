@@ -218,6 +218,14 @@ export function SidePeek({
     }
   };
 
+  // 本文が長くても押し下げられないよう、関連タスクは本文とは別のスクロール領域へ分ける
+  let relatedList: { label: string; tasks: Task[] } | null = null;
+  if (target.type === "milestone") {
+    relatedList = { label: "このマイルストーンのタスク", tasks: target.relatedTasks };
+  } else if (childTasks.length > 0) {
+    relatedList = { label: "子タスク", tasks: childTasks };
+  }
+
   return (
     <div
       key={targetKey}
@@ -267,203 +275,205 @@ export function SidePeek({
           </button>
         </div>
       </div>
-      <div className="flex flex-1 flex-col gap-4.5 overflow-y-auto px-6 py-5.5">
-        <textarea
-          ref={titleRef}
-          rows={1}
-          readOnly={isBuiltinMilestone}
-          value={titleValue}
-          onChange={(e) => handleTitleChange(e.target.value)}
-          onCompositionStart={() => {
-            isComposingTitleRef.current = true;
-          }}
-          onCompositionEnd={(e) => {
-            isComposingTitleRef.current = false;
-            handleTitleChange(e.currentTarget.value);
-          }}
-          onFocus={() => {
-            isTitleFocusedRef.current = true;
-          }}
-          onBlur={(e) => {
-            isTitleFocusedRef.current = false;
-            commitTitle(e.currentTarget.value, false);
-          }}
-          onKeyDown={(e) => {
-            if (e.key !== "Enter") {
-              return;
-            }
-            // タイトルは1行なので改行は入れさせない
-            e.preventDefault();
-            // IMEの変換を確定するEnterまで拾うと、入力の途中で本文へ飛んでしまう
-            if (e.nativeEvent.isComposing) {
-              return;
-            }
-            // 本文へフォーカスが移るとタイトルがblurされ、そこでタイトルが確定する
-            setIsEditingBody(true);
-          }}
-          className="w-full resize-none overflow-hidden break-words border-b border-transparent bg-transparent py-1 text-[19px] font-bold leading-snug text-foreground outline-none focus:border-primary"
-        />
-
-        {!isBuiltinMilestone && (
-          <div className="flex items-center gap-3 text-[13px]">
-            <span className="w-[88px] flex-shrink-0 text-muted-foreground">ステータス</span>
-            <Combobox
-              value={target.type === "task" ? target.task.status : target.milestone.status}
-              options={statusOptions}
-              onChange={handleStatusChange}
-              // 選択肢が少なく一覧で足りるので検索欄は出さない
-              searchable={false}
-              ariaLabel="ステータス"
-              className="w-fit rounded-full py-1.5 pr-3 pl-3 text-[12.5px] font-semibold"
-              style={{ background: statusMeta.bg, color: statusMeta.fg }}
-              contentClassName="w-[170px] min-w-0"
-            />
-          </div>
-        )}
-
-        {target.type === "milestone" && !isBuiltinMilestone && (
-          <div className="flex items-center gap-3 text-[13px]">
-            <span className="w-[88px] flex-shrink-0 text-muted-foreground">タスク一覧</span>
-            <label className="flex items-center gap-2 text-foreground">
-              <input
-                type="checkbox"
-                checked={!target.milestone.hidden}
-                onChange={(e) =>
-                  onMilestoneChange(target.milestone.id, { hidden: !e.target.checked })
-                }
-                className="h-4 w-4 rounded border-border"
-              />
-              表示する
-            </label>
-          </div>
-        )}
-
-        {target.type === "task" && (
-          <div className="flex items-center gap-3 text-[13px]">
-            <span className="w-[88px] flex-shrink-0 text-muted-foreground">マイルストーン</span>
-            <Combobox
-              value={target.task.milestone ?? NO_MILESTONE}
-              options={milestoneOptions}
-              onChange={(value) => {
-                const milestone = value === NO_MILESTONE ? null : value;
-                if (milestone === target.task.milestone) {
-                  return;
-                }
-                onTaskChange(target.task.id, { milestone });
-              }}
-              ariaLabel="マイルストーン"
-              placeholder="未分類"
-              searchPlaceholder="マイルストーンを検索"
-              emptyText="マイルストーンが見つかりません"
-              className="min-w-0 flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-left text-[13px] text-foreground"
-            />
-          </div>
-        )}
-
-        {target.type === "task" && (
-          <div className="flex items-center gap-3 text-[13px]">
-            <span className="w-[88px] flex-shrink-0 text-muted-foreground">親タスク</span>
-            {canHaveParent ? (
-              <>
-                <Combobox
-                  value={target.task.parent ?? NO_PARENT}
-                  options={parentOptions}
-                  onChange={(value) => {
-                    const parent = value === NO_PARENT ? null : value;
-                    if (parent === target.task.parent) {
-                      return;
-                    }
-                    onTaskChange(target.task.id, { parent });
-                  }}
-                  ariaLabel="親タスク"
-                  placeholder="なし"
-                  searchPlaceholder="タスクを検索"
-                  emptyText="タスクが見つかりません"
-                  className="min-w-0 flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-left text-[13px] text-foreground"
-                />
-                {parentTaskId !== null && (
-                  <button
-                    type="button"
-                    onClick={() => onOpenTask(parentTaskId)}
-                    title="親タスクを開く"
-                    className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-                  >
-                    <ArrowUpRightIcon />
-                  </button>
-                )}
-              </>
-            ) : (
-              <span className="text-muted-foreground">子タスクがあるため設定できません</span>
-            )}
-          </div>
-        )}
-
-        <div className="h-px bg-border" />
-
-        {isBuiltinMilestone ? (
-          <p className="text-[13px] leading-relaxed text-muted-foreground">
-            {
-              "rrmapが用意している組み込みのマイルストーン。片付けておきたいタスクの置き場で、タイトルや本文は編集できない。ここから別のマイルストーンへ移し直せる。"
-            }
-          </p>
-        ) : isEditingBody ? (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex flex-shrink-0 flex-col gap-4.5 px-6 pt-5.5 pb-4">
           <textarea
-            ref={bodyRef}
-            value={bodyValue}
-            onChange={(e) => handleBodyChange(e.target.value)}
+            ref={titleRef}
+            rows={1}
+            readOnly={isBuiltinMilestone}
+            value={titleValue}
+            onChange={(e) => handleTitleChange(e.target.value)}
             onCompositionStart={() => {
-              isComposingBodyRef.current = true;
+              isComposingTitleRef.current = true;
             }}
             onCompositionEnd={(e) => {
-              isComposingBodyRef.current = false;
-              handleBodyChange(e.currentTarget.value);
+              isComposingTitleRef.current = false;
+              handleTitleChange(e.currentTarget.value);
             }}
             onFocus={() => {
-              isBodyFocusedRef.current = true;
+              isTitleFocusedRef.current = true;
             }}
             onBlur={(e) => {
-              isBodyFocusedRef.current = false;
-              setIsEditingBody(false);
-              commitBody(e.currentTarget.value, false);
+              isTitleFocusedRef.current = false;
+              commitTitle(e.currentTarget.value, false);
             }}
-            placeholder={BODY_PLACEHOLDER}
-            className="min-h-[170px] w-full flex-1 resize-y border-none bg-transparent text-[13.5px] font-mono leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
-          />
-        ) : (
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={() => setIsEditingBody(true)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                setIsEditingBody(true);
+              if (e.key !== "Enter") {
+                return;
               }
+              // タイトルは1行なので改行は入れさせない
+              e.preventDefault();
+              // IMEの変換を確定するEnterまで拾うと、入力の途中で本文へ飛んでしまう
+              if (e.nativeEvent.isComposing) {
+                return;
+              }
+              // 本文へフォーカスが移るとタイトルがblurされ、そこでタイトルが確定する
+              setIsEditingBody(true);
             }}
-            className="min-h-[170px] w-full flex-1 cursor-text rounded-md"
-          >
-            {body.trim() === "" ? (
-              <span className="text-[13.5px] font-mono text-muted-foreground">
-                {BODY_PLACEHOLDER}
-              </span>
-            ) : (
-              <div className="prose prose-sm max-w-none text-[13.5px] font-mono leading-relaxed text-foreground prose-headings:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-code:before:content-none prose-code:after:content-none prose-pre:border prose-pre:border-border prose-pre:bg-muted prose-pre:text-foreground [&>:first-child]:mt-0 [&>:last-child]:mb-0 dark:prose-invert">
-                <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{body}</ReactMarkdown>
-              </div>
-            )}
-          </div>
-        )}
-
-        {target.type === "milestone" && (
-          <RelatedTaskList
-            label="このマイルストーンのタスク"
-            tasks={target.relatedTasks}
-            onOpenTask={onOpenTask}
+            className="w-full resize-none overflow-hidden break-words border-b border-transparent bg-transparent py-1 text-[19px] font-bold leading-snug text-foreground outline-none focus:border-primary"
           />
-        )}
 
-        {childTasks.length > 0 && (
-          <RelatedTaskList label="子タスク" tasks={childTasks} onOpenTask={onOpenTask} />
+          {!isBuiltinMilestone && (
+            <div className="flex items-center gap-3 text-[13px]">
+              <span className="w-[88px] flex-shrink-0 text-muted-foreground">ステータス</span>
+              <Combobox
+                value={target.type === "task" ? target.task.status : target.milestone.status}
+                options={statusOptions}
+                onChange={handleStatusChange}
+                // 選択肢が少なく一覧で足りるので検索欄は出さない
+                searchable={false}
+                ariaLabel="ステータス"
+                className="w-fit rounded-full py-1.5 pr-3 pl-3 text-[12.5px] font-semibold"
+                style={{ background: statusMeta.bg, color: statusMeta.fg }}
+                contentClassName="w-[170px] min-w-0"
+              />
+            </div>
+          )}
+
+          {target.type === "milestone" && !isBuiltinMilestone && (
+            <div className="flex items-center gap-3 text-[13px]">
+              <span className="w-[88px] flex-shrink-0 text-muted-foreground">タスク一覧</span>
+              <label className="flex items-center gap-2 text-foreground">
+                <input
+                  type="checkbox"
+                  checked={!target.milestone.hidden}
+                  onChange={(e) =>
+                    onMilestoneChange(target.milestone.id, { hidden: !e.target.checked })
+                  }
+                  className="h-4 w-4 rounded border-border"
+                />
+                表示する
+              </label>
+            </div>
+          )}
+
+          {target.type === "task" && (
+            <div className="flex items-center gap-3 text-[13px]">
+              <span className="w-[88px] flex-shrink-0 text-muted-foreground">マイルストーン</span>
+              <Combobox
+                value={target.task.milestone ?? NO_MILESTONE}
+                options={milestoneOptions}
+                onChange={(value) => {
+                  const milestone = value === NO_MILESTONE ? null : value;
+                  if (milestone === target.task.milestone) {
+                    return;
+                  }
+                  onTaskChange(target.task.id, { milestone });
+                }}
+                ariaLabel="マイルストーン"
+                placeholder="未分類"
+                searchPlaceholder="マイルストーンを検索"
+                emptyText="マイルストーンが見つかりません"
+                className="min-w-0 flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-left text-[13px] text-foreground"
+              />
+            </div>
+          )}
+
+          {target.type === "task" && (
+            <div className="flex items-center gap-3 text-[13px]">
+              <span className="w-[88px] flex-shrink-0 text-muted-foreground">親タスク</span>
+              {canHaveParent ? (
+                <>
+                  <Combobox
+                    value={target.task.parent ?? NO_PARENT}
+                    options={parentOptions}
+                    onChange={(value) => {
+                      const parent = value === NO_PARENT ? null : value;
+                      if (parent === target.task.parent) {
+                        return;
+                      }
+                      onTaskChange(target.task.id, { parent });
+                    }}
+                    ariaLabel="親タスク"
+                    placeholder="なし"
+                    searchPlaceholder="タスクを検索"
+                    emptyText="タスクが見つかりません"
+                    className="min-w-0 flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-left text-[13px] text-foreground"
+                  />
+                  {parentTaskId !== null && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenTask(parentTaskId)}
+                      title="親タスクを開く"
+                      className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      <ArrowUpRightIcon />
+                    </button>
+                  )}
+                </>
+              ) : (
+                <span className="text-muted-foreground">子タスクがあるため設定できません</span>
+              )}
+            </div>
+          )}
+
+          <div className="h-px bg-border" />
+        </div>
+
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pt-4 pb-5.5">
+          {isBuiltinMilestone ? (
+            <p className="text-[13px] leading-relaxed text-muted-foreground">
+              {
+                "rrmapが用意している組み込みのマイルストーン。片付けておきたいタスクの置き場で、タイトルや本文は編集できない。ここから別のマイルストーンへ移し直せる。"
+              }
+            </p>
+          ) : isEditingBody ? (
+            <textarea
+              ref={bodyRef}
+              value={bodyValue}
+              onChange={(e) => handleBodyChange(e.target.value)}
+              onCompositionStart={() => {
+                isComposingBodyRef.current = true;
+              }}
+              onCompositionEnd={(e) => {
+                isComposingBodyRef.current = false;
+                handleBodyChange(e.currentTarget.value);
+              }}
+              onFocus={() => {
+                isBodyFocusedRef.current = true;
+              }}
+              onBlur={(e) => {
+                isBodyFocusedRef.current = false;
+                setIsEditingBody(false);
+                commitBody(e.currentTarget.value, false);
+              }}
+              placeholder={BODY_PLACEHOLDER}
+              className="min-h-0 w-full flex-1 resize-none border-none bg-transparent text-[13.5px] font-mono leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
+            />
+          ) : (
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => setIsEditingBody(true)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  setIsEditingBody(true);
+                }
+              }}
+              className="min-h-[170px] w-full grow cursor-text rounded-md"
+            >
+              {body.trim() === "" ? (
+                <span className="text-[13.5px] font-mono text-muted-foreground">
+                  {BODY_PLACEHOLDER}
+                </span>
+              ) : (
+                <div className="prose prose-sm max-w-none text-[13.5px] font-mono leading-relaxed text-foreground prose-headings:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-code:before:content-none prose-code:after:content-none prose-pre:border prose-pre:border-border prose-pre:bg-muted prose-pre:text-foreground [&>:first-child]:mt-0 [&>:last-child]:mb-0 dark:prose-invert">
+                  <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{body}</ReactMarkdown>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {relatedList && (
+          <div className="max-h-[50%] flex-none overflow-y-auto border-t border-border px-6 pb-4">
+            <RelatedTaskList
+              label={relatedList.label}
+              tasks={relatedList.tasks}
+              onOpenTask={onOpenTask}
+            />
+          </div>
         )}
       </div>
     </div>
@@ -481,7 +491,7 @@ function RelatedTaskList({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="mb-0.5 text-[11px] tracking-wide text-muted-foreground uppercase">
+      <div className="sticky top-0 z-10 bg-background pt-4 pb-1.5 text-[11px] tracking-wide text-muted-foreground uppercase">
         {label}
       </div>
       {tasks.length === 0 ? (
