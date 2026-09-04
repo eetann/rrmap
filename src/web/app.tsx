@@ -233,7 +233,8 @@ export function App() {
         />
       )}
       <div className="min-w-0 flex-1 px-14 py-11 pb-16">
-        <div className="mb-8 flex items-center justify-between">
+        {/* スクロールしても検索と見出しを使えるよう、上部に貼り付ける */}
+        <div className="sticky top-0 z-10 -mx-14 -mt-11 mb-3 flex items-center justify-between bg-background px-14 pt-11 pb-5">
           <div className="flex min-w-0 items-center gap-3">
             {/* 開いているときの閉じるボタンはサイドバー側にあるので、ここは開くためだけに出す */}
             {sidebarCollapsed && (
