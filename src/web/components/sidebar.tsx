@@ -98,7 +98,7 @@ export function Sidebar({
   getReorderControls: (id: string) => ReorderControls;
 }) {
   return (
-    <div className="flex w-[248px] flex-shrink-0 flex-col border-r border-border bg-muted px-5 py-7">
+    <div className="flex w-[248px] flex-shrink-0 flex-col overflow-y-auto border-r border-border bg-muted px-5 py-7">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-lg font-bold tracking-tight">rrmap</div>

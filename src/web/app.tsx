@@ -268,8 +268,9 @@ export function App() {
       : null;
   }
 
+  // 画面の高さに収めて、サイドバー・一覧・詳細をそれぞれ独立してスクロールさせる
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       {!sidebarCollapsed && (
         <Sidebar
           visibleMilestones={visibleMilestones}
@@ -283,9 +284,9 @@ export function App() {
           getReorderControls={getControls}
         />
       )}
-      <div className="min-w-0 flex-1 px-14 py-11 pb-16">
-        {/* スクロールしても検索と見出しを使えるよう、上部に貼り付ける */}
-        <div className="sticky top-0 z-10 -mx-14 -mt-11 mb-3 flex items-center justify-between bg-background px-14 pt-11 pb-5">
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* 一覧をスクロールしても使えるよう、検索と見出しはスクロール領域の外に置く */}
+        <div className="flex flex-shrink-0 items-center justify-between px-14 pt-11 pb-5">
           <div className="flex min-w-0 items-center gap-3">
             {/* 開いているときの閉じるボタンはサイドバー側にあるので、ここは開くためだけに出す */}
             {sidebarCollapsed && (
@@ -314,41 +315,43 @@ export function App() {
           </div>
         </div>
 
-        {route.view === "all" ? (
-          <AllTasksList tasks={filteredTasks} milestones={milestones} onOpenTask={openTask} />
-        ) : (
-          <>
-            {visibleMilestones.map((milestone) => (
-              <MilestoneSection
-                key={milestone.id}
-                milestone={milestone}
-                tasks={filteredTasks.filter((t) => t.milestone === milestone.id)}
-                onOpenTask={openTask}
-                onOpenMilestone={openMilestone}
-                onAddTask={(title) => addTask(milestone.id, title)}
-                onReorderTasks={reorderTasks}
-                reorder={getControls(milestone.id)}
+        <div className="min-h-0 flex-1 overflow-y-auto px-14 pt-3 pb-16">
+          {route.view === "all" ? (
+            <AllTasksList tasks={filteredTasks} milestones={milestones} onOpenTask={openTask} />
+          ) : (
+            <>
+              {visibleMilestones.map((milestone) => (
+                <MilestoneSection
+                  key={milestone.id}
+                  milestone={milestone}
+                  tasks={filteredTasks.filter((t) => t.milestone === milestone.id)}
+                  onOpenTask={openTask}
+                  onOpenMilestone={openMilestone}
+                  onAddTask={(title) => addTask(milestone.id, title)}
+                  onReorderTasks={reorderTasks}
+                  reorder={getControls(milestone.id)}
+                />
+              ))}
+
+              {/* 新しいマイルストーンは並び順の末尾に来るので、押した場所のすぐ上に現れる */}
+              <AddMilestoneRow
+                onAdd={addMilestone}
+                openRequested={addMilestoneRequested}
+                onOpenHandled={clearAddMilestoneRequest}
               />
-            ))}
 
-            {/* 新しいマイルストーンは並び順の末尾に来るので、押した場所のすぐ上に現れる */}
-            <AddMilestoneRow
-              onAdd={addMilestone}
-              openRequested={addMilestoneRequested}
-              onOpenHandled={clearAddMilestoneRequest}
-            />
-
-            <MilestoneSection
-              milestone={null}
-              tasks={unassignedTasks}
-              onOpenTask={openTask}
-              onOpenMilestone={() => {}}
-              onAddTask={(title) => addTask(null, title)}
-              onArchiveTasks={archiveTasks}
-              onReorderTasks={reorderTasks}
-            />
-          </>
-        )}
+              <MilestoneSection
+                milestone={null}
+                tasks={unassignedTasks}
+                onOpenTask={openTask}
+                onOpenMilestone={() => {}}
+                onAddTask={(title) => addTask(null, title)}
+                onArchiveTasks={archiveTasks}
+                onReorderTasks={reorderTasks}
+              />
+            </>
+          )}
+        </div>
       </div>
 
       {target && (

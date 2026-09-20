@@ -229,7 +229,7 @@ export function SidePeek({
   return (
     <div
       key={targetKey}
-      className="sticky top-0 flex h-screen w-[480px] flex-shrink-0 flex-col border-l border-border bg-background"
+      className="flex h-full w-[480px] flex-shrink-0 flex-col border-l border-border bg-background"
       style={{ animation: "side-peek-slide-in 160ms ease-out" }}
     >
       <div className="flex flex-shrink-0 items-center justify-between border-b border-border px-5 py-4">
