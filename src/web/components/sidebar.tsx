@@ -3,7 +3,7 @@ import type { TaskView } from "@/lib/route";
 import { cn } from "@/lib/utils";
 import { isArchiveMilestoneId, type Milestone } from "../../milestone";
 import type { Task } from "../../task";
-import { FlagIcon, ListIcon, PanelLeftIcon } from "./icons";
+import { FlagIcon, ListIcon, PanelLeftIcon, PlusIcon } from "./icons";
 import { ReorderControlsGroup } from "./reorder-controls";
 
 function MilestoneList({
@@ -83,6 +83,7 @@ export function Sidebar({
   view,
   onChangeView,
   onOpenMilestone,
+  onAddMilestone,
   onToggleCollapse,
   getReorderControls,
 }: {
@@ -92,6 +93,7 @@ export function Sidebar({
   view: TaskView;
   onChangeView: (view: TaskView) => void;
   onOpenMilestone: (id: string) => void;
+  onAddMilestone: () => void;
   onToggleCollapse: () => void;
   getReorderControls: (id: string) => ReorderControls;
 }) {
@@ -139,8 +141,19 @@ export function Sidebar({
         </button>
       </div>
 
-      <div className="mt-6.5 mb-2.5 ml-2.5 text-[11px] tracking-wide text-muted-foreground uppercase">
-        マイルストーン
+      <div className="group/heading mt-6.5 mb-2.5 flex items-center justify-between pl-2.5">
+        <span className="text-[11px] tracking-wide text-muted-foreground uppercase">
+          マイルストーン
+        </span>
+        <button
+          type="button"
+          onClick={onAddMilestone}
+          aria-label="マイルストーンを追加"
+          title="マイルストーンを追加"
+          className="rounded-md p-1 text-muted-foreground opacity-0 hover:bg-background hover:text-foreground group-hover/heading:opacity-100 focus-visible:opacity-100"
+        >
+          <PlusIcon size={13} />
+        </button>
       </div>
       <MilestoneList
         milestones={visibleMilestones}

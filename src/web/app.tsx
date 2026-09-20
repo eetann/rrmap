@@ -7,6 +7,7 @@ import { sortMilestonesByOrder } from "../milestone-order";
 import { applyPartialOrder } from "../order";
 import type { Task } from "../task";
 import { sortTasksByOrder } from "../task-order";
+import { AddMilestoneRow } from "./components/add-milestone-row";
 import { AllTasksList } from "./components/all-tasks-list";
 import { PanelLeftIcon, SearchIcon } from "./components/icons";
 import { MilestoneSection } from "./components/milestone-section";
@@ -18,6 +19,8 @@ export function App() {
   const [milestones, setMilestones] = useState<Milestone[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  // サイドバーの＋から、ロードマップ側の入力欄を開かせるための合図
+  const [addMilestoneRequested, setAddMilestoneRequested] = useState(false);
   const { route, navigate } = useRoute();
   const { collapsed: sidebarCollapsed, toggle: toggleSidebar } = useSidebarCollapse();
   const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -188,6 +191,32 @@ export function App() {
     setTasks((prev) => (prev ? [...prev, created] : prev));
   }, []);
 
+  const addMilestone = useCallback(
+    async (title: string) => {
+      const res = await fetch("/api/milestones", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      });
+      if (!res.ok) {
+        return;
+      }
+      const created = (await res.json()) as Milestone;
+      setMilestones((prev) => (prev ? [...prev, created] : prev));
+      // 方針や背景をすぐ書き足せるよう、作ったマイルストーンの詳細を開く
+      navigate({ view: "milestones", panel: { type: "milestone", id: created.id } });
+    },
+    [navigate],
+  );
+
+  const requestAddMilestone = useCallback(() => {
+    // 「すべてのタスク」から押されることもあるので、入力欄のあるビューへ連れていく
+    navigate({ view: "milestones", panel: route.panel });
+    setAddMilestoneRequested(true);
+  }, [navigate, route.panel]);
+
+  const clearAddMilestoneRequest = useCallback(() => setAddMilestoneRequested(false), []);
+
   const deleteTask = useCallback(
     async (id: string) => {
       const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
@@ -249,6 +278,7 @@ export function App() {
           view={route.view}
           onChangeView={changeView}
           onOpenMilestone={openMilestone}
+          onAddMilestone={requestAddMilestone}
           onToggleCollapse={toggleSidebar}
           getReorderControls={getControls}
         />
@@ -300,6 +330,13 @@ export function App() {
                 reorder={getControls(milestone.id)}
               />
             ))}
+
+            {/* 新しいマイルストーンは並び順の末尾に来るので、押した場所のすぐ上に現れる */}
+            <AddMilestoneRow
+              onAdd={addMilestone}
+              openRequested={addMilestoneRequested}
+              onOpenHandled={clearAddMilestoneRequest}
+            />
 
             <MilestoneSection
               milestone={null}

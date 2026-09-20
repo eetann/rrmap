@@ -1,7 +1,12 @@
 import path from "node:path";
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
-import { isArchiveMilestoneId, isMilestoneId, isMilestoneStatus } from "../milestone";
+import {
+  isArchiveMilestoneId,
+  isMilestoneId,
+  isMilestoneStatus,
+  nextMilestoneId,
+} from "../milestone";
 import {
   listMilestones,
   readMilestone,
@@ -174,6 +179,25 @@ apiApp.delete("/api/tasks/:id", async (c) => {
 apiApp.get("/api/milestones", async (c) => {
   const milestones = await listMilestones(resolveMilestonesDir());
   return c.json(milestones);
+});
+
+apiApp.post("/api/milestones", async (c) => {
+  const body = await c.req.json();
+  const title = typeof body.title === "string" ? body.title.trim() : "";
+  if (title === "") {
+    return c.json({ error: "title is required" }, 400);
+  }
+
+  const milestonesDir = resolveMilestonesDir();
+  const milestone = {
+    id: nextMilestoneId(await listMilestones(milestonesDir)),
+    title,
+    status: "planned" as const,
+    hidden: false,
+    body: "",
+  };
+  await writeMilestone(milestonesDir, milestone);
+  return c.json(milestone, 201);
 });
 
 // 一覧に出ているマイルストーンの並び順を丸ごと受け取る。

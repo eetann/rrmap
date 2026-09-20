@@ -6,6 +6,7 @@ import {
   type Milestone,
   milestoneIdFromNumber,
   milestoneIdNumber,
+  nextMilestoneId,
   parseMilestone,
   stringifyMilestone,
 } from "./milestone";
@@ -129,5 +130,31 @@ describe("milestoneIdFromNumber / milestoneIdNumber", () => {
   test("round-trips", () => {
     expect(milestoneIdFromNumber(1)).toBe("MILESTONE-0001");
     expect(milestoneIdNumber("MILESTONE-0001")).toBe(1);
+  });
+});
+
+describe("nextMilestoneId", () => {
+  const milestone = (id: string): Milestone => ({
+    id,
+    title: id,
+    status: "planned",
+    hidden: false,
+    body: "",
+  });
+
+  test("starts at 1 when there is no milestone yet", () => {
+    expect(nextMilestoneId([])).toBe("MILESTONE-0001");
+  });
+
+  test("continues from the largest number", () => {
+    expect(nextMilestoneId([milestone("MILESTONE-0001"), milestone("MILESTONE-0003")])).toBe(
+      "MILESTONE-0004",
+    );
+  });
+
+  test("ignores the built-in archive", () => {
+    expect(nextMilestoneId([createArchiveMilestone(), milestone("MILESTONE-0002")])).toBe(
+      "MILESTONE-0003",
+    );
   });
 });

@@ -101,3 +101,16 @@ export function stringifyMilestone(milestone: Milestone): string {
     hidden: milestone.hidden,
   });
 }
+
+/**
+ * 既存のマイルストーンと重ならない次のidを返す。
+ * 組み込みのアーカイブはNNNN形式のidを持たないので採番対象から外す。
+ */
+export function nextMilestoneId(milestones: Milestone[]): string {
+  const maxNumber = milestones.reduce(
+    (max, milestone) =>
+      isArchiveMilestoneId(milestone.id) ? max : Math.max(max, milestoneIdNumber(milestone.id)),
+    0,
+  );
+  return milestoneIdFromNumber(maxNumber + 1);
+}
