@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { cli } from "gunshi";
 import * as pkg from "../package.json";
+import { commitCommand } from "./commands/commit";
 import { createCommand } from "./commands/create";
 import { editCommand } from "./commands/edit";
 import { formatCommand } from "./commands/format";
@@ -22,6 +23,7 @@ try {
       edit: editCommand,
       milestone: milestoneCommand,
       format: formatCommand,
+      commit: commitCommand,
       web: webCommand,
     },
   });

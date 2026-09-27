@@ -157,6 +157,8 @@ rrmap milestone show <id>                    # マイルストーンの詳細（
 rrmap milestone create <title>               # マイルストーン作成（IDは自動採番）
 rrmap milestone edit <id> [--status <status>] [--title <title>] [--hidden|--no-hidden]
 
+rrmap commit [-m <message>]   # .rrmap配下の変更だけをまとめてコミット
+
 rrmap format   # タスク・マイルストーンのMarkdownフォーマットを表示
 rrmap web      # Web UIを起動
 ```
