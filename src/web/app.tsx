@@ -9,6 +9,7 @@ import type { Task } from "../task";
 import { sortTasksByOrder } from "../task-order";
 import { AddMilestoneRow } from "./components/add-milestone-row";
 import { AllTasksList } from "./components/all-tasks-list";
+import { CommitButton } from "./components/commit-button";
 import { PanelLeftIcon, SearchIcon } from "./components/icons";
 import { MilestoneSection } from "./components/milestone-section";
 import { Sidebar } from "./components/sidebar";
@@ -303,15 +304,18 @@ export function App() {
               {route.view === "all" ? "すべてのタスク" : "ロードマップ"}
             </h1>
           </div>
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-muted-foreground">
-            <SearchIcon />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="検索"
-              className="w-[180px] border-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-            />
+          <div className="flex min-w-0 items-center gap-3">
+            <CommitButton />
+            <div className="flex flex-shrink-0 items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-muted-foreground">
+              <SearchIcon />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="検索"
+                className="w-[180px] border-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+              />
+            </div>
           </div>
         </div>
 

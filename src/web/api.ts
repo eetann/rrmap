@@ -1,6 +1,7 @@
 import path from "node:path";
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
+import { commitRrmapChanges } from "../commit-git";
 import {
   isArchiveMilestoneId,
   isMilestoneId,
@@ -257,6 +258,15 @@ apiApp.patch("/api/milestones/:id", async (c) => {
 
   await writeMilestone(milestonesDir, milestone);
   return c.json(milestone);
+});
+
+// Web UIのコミットボタンから、`rrmap commit`と同じ手順でまとめてコミットする
+apiApp.post("/api/commit", async (c) => {
+  try {
+    return c.json(await commitRrmapChanges());
+  } catch (error) {
+    return c.json({ error: (error as Error).message }, 500);
+  }
 });
 
 apiApp.get("/api/events", (c) => {
