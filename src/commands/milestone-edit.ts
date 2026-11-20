@@ -28,6 +28,7 @@ $ rrmap milestone edit MILESTONE-0001 --no-hidden
     },
     hidden: {
       type: "boolean",
+      negatable: true,
       description: "Web UIのタスク一覧から非表示にする（--no-hiddenで再表示）",
     },
   },
