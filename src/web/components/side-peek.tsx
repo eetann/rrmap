@@ -14,10 +14,10 @@ import {
   type Milestone,
   type MilestoneStatus,
 } from "../../milestone";
-import type { Task, TaskStatus } from "../../task";
+import { isHideableTaskStatus, type Task, type TaskStatus } from "../../task";
 import { Combobox, type ComboboxOption } from "./combobox";
 import { CopyIdButton } from "./copy-id-button";
-import { ArchiveIcon, ArrowUpRightIcon, TrashIcon, XIcon } from "./icons";
+import { ArchiveIcon, ArrowUpRightIcon, EyeIcon, EyeOffIcon, TrashIcon, XIcon } from "./icons";
 
 const BODY_PLACEHOLDER = "メモを書く（方針・意思決定など）";
 // マイルストーン未設定(null)をComboboxの値として扱うための番兵。IDは MS-xxxx 形式なので衝突しない
@@ -36,6 +36,7 @@ export function SidePeek({
   onClose,
   onTaskChange,
   onTaskArchive,
+  onTaskHiddenChange,
   onTaskDelete,
   onMilestoneChange,
   onOpenTask,
@@ -51,6 +52,7 @@ export function SidePeek({
     debounce?: boolean,
   ) => void;
   onTaskArchive: (id: string) => void;
+  onTaskHiddenChange: (id: string, hidden: boolean) => void;
   onTaskDelete: (id: string) => void;
   onMilestoneChange: (
     id: string,
@@ -238,6 +240,21 @@ export function SidePeek({
           <CopyIdButton id={idLabel} />
         </div>
         <div className="flex items-center gap-1">
+          {/* 未分類はアーカイブで片付けるので、非表示はマイルストーン所属のタスクだけに出す */}
+          {target.type === "task" &&
+            target.task.milestone !== null &&
+            target.task.milestone !== ARCHIVE_MILESTONE_ID &&
+            (target.task.hidden || isHideableTaskStatus(target.task.status)) && (
+              <button
+                type="button"
+                onClick={() => onTaskHiddenChange(target.task.id, !target.task.hidden)}
+                title={target.task.hidden ? "一覧に再表示" : "一覧から非表示"}
+                aria-pressed={target.task.hidden}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                {target.task.hidden ? <EyeIcon /> : <EyeOffIcon />}
+              </button>
+            )}
           {target.type === "task" && target.task.milestone !== ARCHIVE_MILESTONE_ID && (
             <button
               type="button"

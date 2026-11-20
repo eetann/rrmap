@@ -27,6 +27,9 @@ milestone: null
   - 子タスクの一覧は、`parent`が自分のidと一致するタスクファイルを逆引きして求める（親側にリストは持たせない）
 - `milestone`: 所属するマイルストーンのid。どのマイルストーンにも属さないタスクは`null`（[milestone-format.md](./milestone-format.md)参照）
   - 組み込みの`MILESTONE-ARCHIVED`も指定できる。片付いたタスクの置き場で、一覧から外れる
+- `hidden`: `true`にするとWeb UIのマイルストーンビューから外れる。省略時は`false`で、`false`のときはファイルに書き出さない
+  - 隠せるのは`status`が`done`・`cancelled`のタスクだけ。それ以外のステータスへ変えると`false`に戻る
+  - 所属するマイルストーンは変わらないので、マイルストーンの進捗には数えられる。`rrmap list`と「すべてのタスク」ビューには今までどおり出る
 
 ## 並び順
 

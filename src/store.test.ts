@@ -34,6 +34,7 @@ describe("store", () => {
         status: "draft",
         parent: null,
         milestone: null,
+        hidden: false,
         body: "",
       });
     }
@@ -54,6 +55,7 @@ describe("store", () => {
       status: "draft",
       parent: null,
       milestone: null,
+      hidden: false,
       body: "本文",
     });
     expect(await readTask(tasksDir, "TASK-0001")).toEqual({
@@ -62,6 +64,7 @@ describe("store", () => {
       status: "draft",
       parent: null,
       milestone: null,
+      hidden: false,
       body: "本文",
     });
   });
@@ -77,6 +80,7 @@ describe("store", () => {
       status: "draft",
       parent: null,
       milestone: null,
+      hidden: false,
       body: "",
     });
     await writeTask(tasksDir, {
@@ -85,6 +89,7 @@ describe("store", () => {
       status: "draft",
       parent: null,
       milestone: null,
+      hidden: false,
       body: "",
     });
     const tasks = await listTasks(tasksDir);
@@ -150,6 +155,7 @@ describe("store", () => {
       status: "draft",
       parent: null,
       milestone: null,
+      hidden: false,
       body: "",
     });
     await deleteTask(tasksDir, "TASK-0001");

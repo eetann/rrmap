@@ -23,7 +23,13 @@ import {
   resolveTasksDir,
   writeTask,
 } from "../store";
-import { isTaskId, isTaskStatus, taskIdFromNumber, taskIdNumber } from "../task";
+import {
+  isHideableTaskStatus,
+  isTaskId,
+  isTaskStatus,
+  taskIdFromNumber,
+  taskIdNumber,
+} from "../task";
 import { createFileWatcher } from "./watch";
 
 const watcher = createFileWatcher([resolveTasksDir(), resolveMilestonesDir()]);
@@ -69,6 +75,7 @@ apiApp.post("/api/tasks", async (c) => {
     status: "draft" as const,
     parent: null,
     milestone: milestoneId,
+    hidden: false,
     body: "",
   };
   await writeTask(tasksDir, task);
@@ -157,6 +164,19 @@ apiApp.patch("/api/tasks/:id", async (c) => {
       }
     }
     task.parent = body.parent;
+  }
+  if (body.hidden !== undefined) {
+    if (typeof body.hidden !== "boolean") {
+      return c.json({ error: "hidden must be a boolean" }, 400);
+    }
+    if (body.hidden && !isHideableTaskStatus(task.status)) {
+      return c.json({ error: "only done or cancelled tasks can be hidden" }, 400);
+    }
+    task.hidden = body.hidden;
+  }
+  // 完了から作業中へ戻したタスクが見えないままにならないよう、隠せないステータスなら表示に戻す
+  if (!isHideableTaskStatus(task.status)) {
+    task.hidden = false;
   }
 
   await writeTask(tasksDir, task);

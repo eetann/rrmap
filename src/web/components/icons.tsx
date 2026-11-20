@@ -214,6 +214,46 @@ export function ArchiveIcon({ className, size = 14 }: IconProps) {
   );
 }
 
+export function EyeIcon({ className, size = 14 }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+export function EyeOffIcon({ className, size = 14 }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c4.36 0 8.07 2.78 9.94 6.65a1 1 0 0 1 0 .7 10.75 10.75 0 0 1-1.44 2.49" />
+      <path d="M14.08 14.16a3 3 0 0 1-4.24-4.24" />
+      <path d="M17.48 17.5a10.75 10.75 0 0 1-15.42-5.15 1 1 0 0 1 0-.7 10.75 10.75 0 0 1 4.45-5.14" />
+      <path d="m2 2 20 20" />
+    </svg>
+  );
+}
+
 export function ChevronUpIcon({ className, size = 13 }: IconProps) {
   return (
     <svg

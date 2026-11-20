@@ -3,7 +3,7 @@ import type { Task } from "../../task";
 import { buildTaskTree } from "./task-tree";
 
 function task(id: string, parent: string | null = null): Task {
-  return { id, title: id, status: "draft", parent, milestone: null, body: "" };
+  return { id, title: id, status: "draft", parent, milestone: null, hidden: false, body: "" };
 }
 
 describe("buildTaskTree", () => {

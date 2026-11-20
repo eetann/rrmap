@@ -31,12 +31,16 @@ description: |
 | `rrmap list [--status <status>] [--parent <id>] [--milestone <id>]` | タスク一覧を表示 |
 | `rrmap show <id>` | タスクの詳細（本文込み）を表示 |
 | `rrmap create <title> [--parent <id>] [--milestone <id>]` | タスクを作成（IDは自動採番） |
-| `rrmap edit <id>... [--status <status>] [--title <title>] [--milestone <id\|none>]` | status/title/milestoneを変更（idは複数まとめて指定できる。`none`で未分類に戻す） |
+| `rrmap edit <id>... [--status <status>] [--title <title>] [--milestone <id\|none>] [--hidden\|--no-hidden]` | status/title/milestone/hiddenを変更（idは複数まとめて指定できる。`none`で未分類に戻す） |
 | `rrmap format` | タスク・マイルストーンのMarkdownフォーマットを表示 |
 
 `status`: `draft`（雑に書いた） / `refined`（分割済み・実装を見据えて整理済み） / `in_progress` / `done` / `cancelled`
 
 `refined`を経由する必要はない。`draft`のまま着手して`in_progress`にしてよい。
+
+`--hidden`はWeb UIのマイルストーンビューからタスクを隠す。所属は変わらず、進捗の数にも含まれる。
+隠せるのは`done`・`cancelled`のタスクだけで、それ以外のステータスへ戻すと自動で表示に戻る。
+`rrmap list`は非表示のタスクも表示する。アーカイブと同じく、ユーザーから指示があったときだけ使うこと。
 
 ### マイルストーン
 
@@ -89,6 +93,7 @@ title: タスクのタイトル
 status: draft
 parent: null       # 分割元の親タスクid（TASK-XXXX形式）。トップレベルなら null。親子関係は1階層のみ
 milestone: null    # 所属するマイルストーンid（MILESTONE-XXXX形式）。どこにも属さなければ null。MILESTONE-ARCHIVEDも指定できる
+hidden: true       # 省略可（省略時はfalse）。trueでWeb UIのマイルストーンビューから外れる。done / cancelledのみ
 ---
 ```
 

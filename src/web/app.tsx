@@ -5,7 +5,7 @@ import { useSidebarCollapse } from "@/lib/sidebar-collapse";
 import { ARCHIVE_MILESTONE_ID, isArchiveMilestoneId, type Milestone } from "../milestone";
 import { sortMilestonesByOrder } from "../milestone-order";
 import { applyPartialOrder } from "../order";
-import type { Task } from "../task";
+import { isHideableTaskStatus, type Task } from "../task";
 import { sortTasksByOrder } from "../task-order";
 import { AddMilestoneRow } from "./components/add-milestone-row";
 import { AllTasksList } from "./components/all-tasks-list";
@@ -104,10 +104,15 @@ export function App() {
   const updateTask = useCallback(
     (
       id: string,
-      patch: Partial<Pick<Task, "title" | "status" | "milestone" | "parent" | "body">>,
+      patch: Partial<Pick<Task, "title" | "status" | "milestone" | "parent" | "hidden" | "body">>,
       debounce = false,
     ) => {
-      setTasks((prev) => prev?.map((t) => (t.id === id ? { ...t, ...patch } : t)) ?? prev);
+      // サーバー側でも、隠せないステータスへ戻したタスクは表示に戻している。見た目をそれに揃える
+      const localPatch =
+        patch.status !== undefined && !isHideableTaskStatus(patch.status)
+          ? { ...patch, hidden: false }
+          : patch;
+      setTasks((prev) => prev?.map((t) => (t.id === id ? { ...t, ...localPatch } : t)) ?? prev);
       const field = Object.keys(patch)[0] ?? "misc";
       schedulePatch(`/api/tasks/${id}`, `task-${id}-${field}`, patch, debounce);
     },
@@ -124,6 +129,22 @@ export function App() {
   );
 
   const archiveTask = useCallback((id: string) => archiveTasks([id]), [archiveTasks]);
+
+  const hideTasks = useCallback(
+    (ids: string[]) => {
+      for (const id of ids) {
+        updateTask(id, { hidden: true });
+      }
+    },
+    [updateTask],
+  );
+
+  const setTaskHidden = useCallback(
+    (id: string, hidden: boolean) => updateTask(id, { hidden }),
+    [updateTask],
+  );
+
+  const unhideTask = useCallback((id: string) => setTaskHidden(id, false), [setTaskHidden]);
 
   const updateMilestone = useCallback(
     (
@@ -332,6 +353,8 @@ export function App() {
                   onOpenTask={openTask}
                   onOpenMilestone={openMilestone}
                   onAddTask={(title) => addTask(milestone.id, title)}
+                  onHideTasks={hideTasks}
+                  onUnhideTask={unhideTask}
                   onReorderTasks={reorderTasks}
                   reorder={getControls(milestone.id)}
                 />
@@ -350,7 +373,8 @@ export function App() {
                 onOpenTask={openTask}
                 onOpenMilestone={() => {}}
                 onAddTask={(title) => addTask(null, title)}
-                onArchiveTasks={archiveTasks}
+                onHideTasks={archiveTasks}
+                onUnhideTask={unhideTask}
                 onReorderTasks={reorderTasks}
               />
             </>
@@ -366,6 +390,7 @@ export function App() {
           onClose={closePanel}
           onTaskChange={updateTask}
           onTaskArchive={archiveTask}
+          onTaskHiddenChange={setTaskHidden}
           onTaskDelete={deleteTask}
           onMilestoneChange={updateMilestone}
           onOpenTask={openTask}

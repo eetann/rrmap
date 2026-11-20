@@ -3,7 +3,7 @@ import type { Task } from "./task";
 import { sortTasksByOrder } from "./task-order";
 
 function task(id: string): Task {
-  return { id, title: id, status: "draft", parent: null, milestone: null, body: "" };
+  return { id, title: id, status: "draft", parent: null, milestone: null, hidden: false, body: "" };
 }
 
 describe("sortTasksByOrder", () => {

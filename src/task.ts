@@ -5,12 +5,21 @@ export const TASK_STATUSES = ["draft", "refined", "in_progress", "done", "cancel
 
 export type TaskStatus = (typeof TASK_STATUSES)[number];
 
+// 片付いたとみなせるステータス。これらのタスクだけ一覧から非表示にできる
+export const HIDEABLE_TASK_STATUSES: readonly TaskStatus[] = ["done", "cancelled"];
+
+export function isHideableTaskStatus(status: TaskStatus): boolean {
+  return HIDEABLE_TASK_STATUSES.includes(status);
+}
+
 export interface Task {
   id: string;
   title: string;
   status: TaskStatus;
   parent: string | null;
   milestone: string | null;
+  // Web UIのマイルストーンビューから外す。所属はそのままなので進捗の数には含まれる
+  hidden: boolean;
   body: string;
 }
 
@@ -60,6 +69,9 @@ export function parseTask(raw: string): Task {
   if (data.milestone !== null && data.milestone !== undefined && !isMilestoneId(data.milestone)) {
     throw new Error(`invalid task frontmatter: "milestone" must be a milestone id or null`);
   }
+  if (data.hidden !== undefined && typeof data.hidden !== "boolean") {
+    throw new Error(`invalid task frontmatter: "hidden" must be a boolean`);
+  }
 
   return {
     id: data.id,
@@ -67,6 +79,7 @@ export function parseTask(raw: string): Task {
     status: data.status,
     parent: data.parent ?? null,
     milestone: data.milestone ?? null,
+    hidden: data.hidden ?? false,
     body: content.replace(/^\n+/, "").replace(/\n+$/, ""),
   };
 }
@@ -78,5 +91,7 @@ export function stringifyTask(task: Task): string {
     status: task.status,
     parent: task.parent,
     milestone: task.milestone,
+    // ほとんどのタスクはfalseなので、全ファイルに1行増えないよう省く
+    ...(task.hidden ? { hidden: true } : {}),
   });
 }

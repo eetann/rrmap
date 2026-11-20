@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { ARCHIVE_MILESTONE_ID } from "./milestone";
-import { parseTask, stringifyTask, type Task } from "./task";
+import { isHideableTaskStatus, parseTask, stringifyTask, type Task } from "./task";
 
 describe("parseTask", () => {
   test("parses a valid task", () => {
@@ -18,6 +18,7 @@ milestone: null
       status: "draft",
       parent: null,
       milestone: null,
+      hidden: false,
       body: "本文",
     });
   });
@@ -130,8 +131,42 @@ describe("stringifyTask", () => {
       status: "refined",
       parent: "TASK-0001",
       milestone: "MILESTONE-0001",
+      hidden: false,
       body: "本文\n複数行",
     };
     expect(parseTask(stringifyTask(task))).toEqual(task);
+  });
+});
+
+describe("hidden", () => {
+  const base = `---
+id: TASK-0001
+title: サンプル
+status: done
+parent: null
+milestone: MILESTONE-0001
+`;
+
+  test("parses hidden: true", () => {
+    expect(parseTask(`${base}hidden: true\n---\n`).hidden).toBe(true);
+  });
+
+  test("throws when hidden is not a boolean", () => {
+    expect(() => parseTask(`${base}hidden: "yes"\n---\n`)).toThrow(/"hidden"/);
+  });
+
+  test("omits hidden from frontmatter when false", () => {
+    const task = parseTask(`${base}---\n`);
+    expect(stringifyTask(task)).not.toContain("hidden");
+    expect(stringifyTask({ ...task, hidden: true })).toContain("hidden: true");
+  });
+});
+
+describe("isHideableTaskStatus", () => {
+  test("only done and cancelled are hideable", () => {
+    expect(isHideableTaskStatus("done")).toBe(true);
+    expect(isHideableTaskStatus("cancelled")).toBe(true);
+    expect(isHideableTaskStatus("in_progress")).toBe(false);
+    expect(isHideableTaskStatus("draft")).toBe(false);
   });
 });

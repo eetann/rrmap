@@ -17,6 +17,7 @@ title: タスクのタイトル
 status: draft              # ${TASK_STATUSES.join(" | ")}
 parent: null                # 親タスクid（TASK-XXXX形式）。トップレベルなら null。親子関係は1階層のみ
 milestone: null             # 所属マイルストーンid（MILESTONE-XXXX形式）。どこにも属さなければ null
+hidden: true                # 省略可（省略時はfalse）。trueでWeb UIのマイルストーンビューから外れる。done / cancelledのみ
 ---
 
 本文は自由なMarkdown。テンプレートは強制しないが、「何をするか」「現在の状態」「方針・意思決定」に

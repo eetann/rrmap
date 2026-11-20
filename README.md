@@ -112,16 +112,31 @@ rrmap web
 
 画面右上の「コミット」ボタンは`rrmap commit`と同じ動きをします。押すと`.rrmap`配下の変更だけがコミットされ、組み立てたコミットメッセージがボタンの隣に数秒出ます。書きかけのコードは巻き込まないので、タスクを整理し終えたタイミングでそのまま押せます。
 
-## 片付いたタスクをアーカイブする
+## 片付いたタスクを一覧から外す
 
-完了したタスクが溜まってくると一覧が読みづらくなります。rrmapには`MILESTONE-ARCHIVED`という組み込みのマイルストーンが最初から用意されているので、片付けたいタスクはここへ移してください。マイルストーンのファイルを自分で作る必要はありません。
+完了したタスクが溜まってくると一覧が読みづらくなります。外し方は、タスクがマイルストーンに属しているかどうかで変わります。
+
+### マイルストーン所属のタスクを非表示にする
+
+`done`・`cancelled`のタスクは、所属はそのままで一覧から隠せます。マイルストーンの進捗（n / m 完了）には引き続き数えられます。
+
+```bash
+rrmap edit TASK-0001 TASK-0007 --hidden   # 一覧から外す
+rrmap edit TASK-0001 --no-hidden          # 戻す
+```
+
+Web UIでは、マイルストーン見出しの「完了・中止 N 件を非表示」でまとめて隠せます。1件ずつ隠すときは、行にマウスを乗せると出るボタンか、タスクを開いたときの右上のボタンを使います。隠したタスクは見出しの「非表示 N 件を表示」で一時的に出せて、そこから戻せます。ステータスを`done`・`cancelled`以外へ戻すと、自動で表示に戻ります。
+
+### 未分類のタスクをアーカイブする
+
+rrmapには`MILESTONE-ARCHIVED`という組み込みのマイルストーンが最初から用意されているので、片付けたいタスクはここへ移してください。マイルストーンのファイルを自分で作る必要はありません。
 
 ```bash
 rrmap edit TASK-0001 TASK-0007 TASK-0012 --milestone MILESTONE-ARCHIVED
 rrmap edit TASK-0001 --milestone none   # 未分類に戻す
 ```
 
-Web UIからは、未分類セクションの「完了・中止 N 件をアーカイブ」でまとめて移せます。タスクを開いたときの右上のボタンからは1件ずつ移せます。
+Web UIからは、未分類セクションの「完了・中止 N 件をアーカイブ」でまとめて移せます。1件ずつ移すときは、行にマウスを乗せると出るボタンか、タスクを開いたときの右上のボタンを使います。
 
 アーカイブしたタスクはマイルストーンの一覧からは外れますが、サイドバーの「非表示のマイルストーン」から中身を確認でき、そこから別のマイルストーンへ移し直すこともできます。`rrmap list`は今までどおり全部表示するので、CLIから見えなくなることはありません。
 
@@ -154,7 +169,7 @@ rrmap milestone edit MILESTONE-0001 --no-hidden   # 戻す
 rrmap list [--status <status>] [--parent <id>] [--milestone <id>]   # タスク一覧
 rrmap show <id>                                                     # タスクの詳細（本文込み）
 rrmap create <title> [--parent <id>] [--milestone <id>]             # タスク作成（IDは自動採番）
-rrmap edit <id>... [--status <status>] [--title <title>] [--milestone <id|none>]  # idは複数指定可
+rrmap edit <id>... [--status <status>] [--title <title>] [--milestone <id|none>] [--hidden|--no-hidden]  # idは複数指定可
 
 rrmap milestone list [--status <status>]     # マイルストーン一覧
 rrmap milestone show <id>                    # マイルストーンの詳細（本文込み）

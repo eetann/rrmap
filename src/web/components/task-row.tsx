@@ -3,8 +3,23 @@ import { TASK_STATUS_META } from "@/lib/status";
 import { cn } from "@/lib/utils";
 import type { Task } from "../../task";
 import { CopyIdButton } from "./copy-id-button";
-import { CheckIcon } from "./icons";
+import { ArchiveIcon, CheckIcon, EyeIcon, EyeOffIcon } from "./icons";
 import { ReorderControlsGroup } from "./reorder-controls";
+
+// 未分類はアーカイブへ移し、マイルストーン所属は所属を残したまま非表示にする
+export type TaskVisibilityKind = "archive" | "hide" | "unhide";
+
+const VISIBILITY_ACTION_META: Record<TaskVisibilityKind, { label: string; Icon: typeof EyeIcon }> =
+  {
+    archive: { label: "アーカイブへ移動", Icon: ArchiveIcon },
+    hide: { label: "非表示にする", Icon: EyeOffIcon },
+    unhide: { label: "再表示する", Icon: EyeIcon },
+  };
+
+export interface TaskRowVisibilityAction {
+  kind: TaskVisibilityKind;
+  onClick: () => void;
+}
 
 export function TaskRow({
   task,
@@ -12,6 +27,7 @@ export function TaskRow({
   milestoneLabel,
   isChild = false,
   reorder,
+  visibilityAction,
 }: {
   task: Task;
   onClick: () => void;
@@ -20,8 +36,10 @@ export function TaskRow({
   isChild?: boolean;
   // 並び替えできない一覧（すべてのタスクなど）では渡さない
   reorder?: ReorderControls;
+  visibilityAction?: TaskRowVisibilityAction;
 }) {
   const meta = TASK_STATUS_META[task.status];
+  const visibilityMeta = visibilityAction ? VISIBILITY_ACTION_META[visibilityAction.kind] : null;
 
   return (
     <div
@@ -38,6 +56,7 @@ export function TaskRow({
       className={cn(
         "group/task flex cursor-pointer items-center gap-3 border-b border-border px-1.5 py-3 hover:bg-muted",
         isChild && "pl-8",
+        task.hidden && "opacity-50",
         reorder?.isDragging === true && "opacity-40",
         reorder?.isOver === true && "border-b-transparent ring-2 ring-ring",
       )}
@@ -74,6 +93,22 @@ export function TaskRow({
           >
             <ReorderControlsGroup controls={reorder} direction="horizontal" />
           </span>
+        )}
+        {visibilityAction && visibilityMeta && (
+          <button
+            type="button"
+            title={visibilityMeta.label}
+            aria-label={visibilityMeta.label}
+            // 行のクリックで詳細が開かないよう止める
+            onClick={(e) => {
+              e.stopPropagation();
+              visibilityAction.onClick();
+            }}
+            onKeyDown={(e) => e.stopPropagation()}
+            className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity group-hover/task:opacity-100 hover:bg-background hover:text-foreground focus-visible:opacity-100"
+          >
+            <visibilityMeta.Icon size={13} />
+          </button>
         )}
         {milestoneLabel !== undefined && (
           <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">

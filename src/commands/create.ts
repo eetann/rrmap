@@ -59,6 +59,7 @@ $ rrmap create "タスクのタイトル" --milestone MILESTONE-0001
       status: "draft",
       parent: parentId,
       milestone: milestoneId,
+      hidden: false,
       body: "",
     });
     console.log(`created task #${id}: ${title}`);

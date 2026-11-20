@@ -2,7 +2,7 @@ import { define } from "gunshi";
 import { ARCHIVE_MILESTONE_ID } from "../milestone";
 import { readMilestone, resolveMilestonesDir } from "../milestone-store";
 import { readTask, resolveTasksDir, writeTask } from "../store";
-import { TASK_STATUSES } from "../task";
+import { isHideableTaskStatus, TASK_STATUSES } from "../task";
 import { parseMilestoneId } from "./milestone-id";
 import { parseTaskId } from "./task-id";
 
@@ -16,9 +16,11 @@ export const editCommand = define({
 $ rrmap edit TASK-0001 --title "新しいタイトル"
 $ rrmap edit TASK-0001 TASK-0007 TASK-0012 --milestone ${ARCHIVE_MILESTONE_ID}
 $ rrmap edit TASK-0001 --milestone ${NO_MILESTONE}
+$ rrmap edit TASK-0001 TASK-0002 --hidden
+$ rrmap edit TASK-0001 --no-hidden
 
 idは複数まとめて指定でき、同じ変更が全idに適用される。
-このコマンドで変更できるのは status / title / milestone のみ。本文（方針・意思決定など）を書きたい場合は
+このコマンドで変更できるのは status / title / milestone / hidden のみ。本文（方針・意思決定など）を書きたい場合は
 .rrmap/tasks/TASK-XXXX.md を直接編集してよい（フォーマットは \`rrmap format\` 参照）。`,
   args: {
     ids: {
@@ -38,6 +40,12 @@ idは複数まとめて指定でき、同じ変更が全idに適用される。
     milestone: {
       type: "string",
       description: `所属マイルストーンを変更する（${NO_MILESTONE}で未分類に戻す。${ARCHIVE_MILESTONE_ID}でアーカイブ）`,
+    },
+    hidden: {
+      type: "boolean",
+      negatable: true,
+      description:
+        "Web UIのマイルストーンビューから非表示にする（done / cancelledのみ。--no-hiddenで再表示）",
     },
   },
   run: async (ctx) => {
@@ -62,6 +70,18 @@ idは複数まとめて指定でき、同じ変更が全idに適用される。
     const tasksDir = resolveTasksDir();
     const tasks = await Promise.all(ids.map((id) => readTask(tasksDir, id)));
 
+    // 一部だけ書き換わらないよう、隠せないタスクが混ざっていたら書き込む前に止める
+    if (ctx.values.hidden === true) {
+      const unhideable = tasks.filter(
+        (task) => !isHideableTaskStatus(ctx.values.status ?? task.status),
+      );
+      if (unhideable.length > 0) {
+        throw new Error(
+          `only done or cancelled tasks can be hidden: ${unhideable.map((t) => t.id).join(", ")}`,
+        );
+      }
+    }
+
     for (const task of tasks) {
       if (ctx.values.status !== undefined) {
         task.status = ctx.values.status;
@@ -71,6 +91,13 @@ idは複数まとめて指定でき、同じ変更が全idに適用される。
       }
       if (milestone !== undefined) {
         task.milestone = milestone;
+      }
+      if (ctx.values.hidden !== undefined) {
+        task.hidden = ctx.values.hidden;
+      }
+      // 完了から作業中へ戻したタスクが見えないままにならないよう、隠せないステータスなら表示に戻す
+      if (!isHideableTaskStatus(task.status)) {
+        task.hidden = false;
       }
       await writeTask(tasksDir, task);
       console.log(`updated task #${task.id}`);
