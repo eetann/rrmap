@@ -320,8 +320,10 @@ export function SidePeek({
               }
               // タイトルは1行なので改行は入れさせない
               e.preventDefault();
-              // IMEの変換を確定するEnterまで拾うと、入力の途中で本文へ飛んでしまう
-              if (e.nativeEvent.isComposing) {
+              // IMEの変換を確定するEnterまで拾うと、入力の途中で本文へ飛んでしまう。
+              // Safariではcompositionendがkeydownより先に来てisComposingがfalseになるため、
+              // IME処理中を示すkeyCode 229も見る
+              if (e.nativeEvent.isComposing || e.keyCode === 229) {
                 return;
               }
               // 本文へフォーカスが移るとタイトルがblurされ、そこでタイトルが確定する
